@@ -4,5 +4,11 @@
         "psr-0" : {
             "DClarkFarr\\codeframe" : ""
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/DClarkFarr/codeframe"
+        }
+    ],
 }
