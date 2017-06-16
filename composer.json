@@ -9,7 +9,7 @@
             "name": "Daniel Farr",
             "email": "daniel@thecodeframe.com",
             "homepage": "http://www.dclarkfarr.com"
-        },
+        }
     ],
     "support": {
         "issues": "https://github.com/dclarkfarr/codeframe/issues"
@@ -17,9 +17,6 @@
     "require": {
         "php": "^5.3.2 || ^7.0"
     },
-    "require-dev": {
-    },
-
     "autoload": {
         "psr-4": { "Codeframe\\": "src/Codeframe" }
     },
