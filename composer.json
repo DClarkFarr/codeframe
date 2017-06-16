@@ -1,0 +1,8 @@
+{
+    "nameme": "dclarkfarr/codeframe",
+    "autoload": {
+        "psr-0" : {
+            "DClarkFarr\\codeframe" : ""
+        }
+    }
+}
