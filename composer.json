@@ -1,5 +1,6 @@
 {
-    "nameme": "dclarkfarr/codeframe",
+    "name": "dclarkfarr/codeframe",
+    "description": "An MVC framework that is more",
     "autoload": {
         "psr-0" : {
             "DClarkFarr\\codeframe" : ""
@@ -11,4 +12,7 @@
             "url": "https://github.com/DClarkFarr/codeframe"
         }
     ],
+   "require": {
+      "php": "^5.6 || ^7.0"
+   }
 }
