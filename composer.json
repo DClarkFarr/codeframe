@@ -1,6 +1,6 @@
 {
     "name": "dclarkfarr/codeframe",
-    "description": "An MVC framework that is more",
+    "description": "An MVC framework that is more!",
     "autoload": {
         "psr-0" : {
             "DClarkFarr\\codeframe" : ""
