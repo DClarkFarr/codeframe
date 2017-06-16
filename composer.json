@@ -1,18 +1,7 @@
 {
     "name": "dclarkfarr/codeframe",
     "description": "An MVC framework that is more!",
-    "autoload": {
-        "psr-0" : {
-            "DClarkFarr\\codeframe" : ""
-        }
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/DClarkFarr/codeframe"
-        }
-    ],
    "require": {
-      "php": "^5.6 || ^7.0"
+
    }
 }
