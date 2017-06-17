@@ -125,10 +125,12 @@ class Router {
 		if($this->routes){
 			$traceback_ids = $this->parseRoutes();
 
+			/*
 			echo "<pre>";
 			print_r($traceback_ids);
 			print_r($this->routes);
 			echo "</pre>";
+			*/
 			
 		}
 

@@ -12,6 +12,8 @@ class App {
 		Router::bootstrap();
 
 		Session::bootstrap();
+
+		Cache::bootstrap();
 		
 	}
 }

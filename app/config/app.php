@@ -5,4 +5,7 @@ return [
 	'router' => array(
 		'default_name' => 'default',
 	),
+	'cache' => array(
+		'path' => realpath(__DIR__ . '/../storage/cache/'),
+	),
 ];
