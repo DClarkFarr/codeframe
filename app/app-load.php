@@ -6,6 +6,8 @@ include __DIR__ . '/lib/autoload.php';
 
 include __DIR__ . '/App.php';
 
+include __DIR__ . '/Cache.php';
+
 include __DIR__ . '/Config.php';
 
 include __DIR__ . '/DB.php';
