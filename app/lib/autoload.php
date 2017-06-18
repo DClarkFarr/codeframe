@@ -2,6 +2,7 @@
 $files = [
 	'mysqli.functions.php',
 	'Files.php',
+	'Arrays.php',
 ];
 
 foreach($files as $file){

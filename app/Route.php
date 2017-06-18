@@ -1,4 +1,4 @@
- <?php 
+<?php 
 
 class Route {
 
@@ -45,10 +45,43 @@ class Route {
 		
 		$this->component = new $this->component_class($this->component_uri, $this->component_pattern);
 	}
+	function contextMatchedUri(){
+		$str = "";
+		if($this->hasContext()){
+			foreach($this->context as $traceback_id){
+				$str .= $this->getRouter()->routes[$traceback_id]->used() . '/';
+			}
+		}
+		return $str;
+	}
+	function fullMatchedUri(){
+		return $this->contextMatchedUri() . $this->used();
+	}
+
+	function contextMatchedSegments(){
+		$arr = [];
+		if($this->hasContext()){
+			foreach($this->context as $traceback_id){
+				$arr = arrays_add($arr, $this->getRouter()->routes[$traceback_id]->matched());
+			}
+		}
+		return $arr;
+	}
+	function fullMatchedSegments(){
+		return arrays_add($this->contextMatchedSegments(), $this->matched());
+	}
 
 	function chain(Route $route){
+		if($route->hasContext()){
+			foreach($route->context as $traceback){
+				array_push($this->context, $traceback);
+			}
+		}
 		array_push($this->context, $route->traceback);
 		return $this;
+	}
+	function hasContext(){
+		return !empty($this->context) ? 1 : 0;
 	}
 	function setRouter($router_name){
 		$this->router_name = $router_name;
@@ -79,6 +112,12 @@ class Route {
 	function getRouter(){
 		return Router::get($this->router_name);
 	}
+	function isMatched(){
+		if($this->component->payload->matched && in_array($this->getRouter()->components->method, $this->methods) ){
+			return true;
+		}
+		return false;
+	}
 
 	function __call($name, $params){
 		if(method_exists($this->component, $name)){
@@ -108,14 +147,6 @@ class Route {
 		}
 		throw new Exception('Route::' . $name . '() not found');
 	}
-
-	function isMatched(){
-		if($this->component->payload->matched && in_array($this->getRouter()->components->method, $this->methods) ){
-			return true;
-		}
-		return false;
-	}
-
 
 	//static functions
 	static function create($head, $pattern, $uri = null, $router_name = null){

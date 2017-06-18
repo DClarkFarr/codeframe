@@ -9,9 +9,9 @@ $router->global('{locale}', $router->components->uri, function(&$uri, $unused_ur
 	$uri = $unused_uri;
 })->where('locale', '^[a-z]{2}$');
 
-Route::get('your-mom');
+Route::get('uk/your-mom', $router->components->uri);
 
-Route::post('your-mom')->where('id', 'faceit');
+Route::get('blog/{your-mom}', $router->components->uri)->where('id', 'faceit');
 
 $router->group('blog', $router->components->uri, function(&$uri, $unused_uri, $params, $route){
 	

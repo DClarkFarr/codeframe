@@ -28,7 +28,6 @@ class Router {
 
 		$router = new self;
 
-		$router->includeRoutes();
 	}
 	static function get($name = null){
 		if(!$name){
@@ -59,23 +58,7 @@ class Router {
 
 		return $obj;
 	}
-	function includeRoutes($path = null){
-		if(!$path){
-			$path = Config::get('app.routes.path');
-		}
-		
-
-		if(is_file($path)){
-			include $path;
-		}else if(is_dir($path)){
-			foreach(scandir($path) as $file){
-				if(is_file(rtrim($path, '/') . '/' . $file)){
-					include rtrim($path, '/') . '/' . $file;
-				}
-				
-			}
-		}
-	}
+	
 	function global($pattern, &$uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->global();
@@ -105,7 +88,7 @@ class Router {
 		if(!$this->routes){
 			return false;
 		}
-		$matched = [];
+		$scores = [];
 		foreach($this->routes as $key => $r){
 			$r->update();
 
@@ -115,28 +98,87 @@ class Router {
 
 			}else{
 				if($r->isMatched()){
-					$matched[] = $r->traceback;
+					$scores[$r->traceback] = strlen($r->unused());
 				}
 			}
 		}
-		return $matched;
+		asort($scores);
+		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
+	}
+	function findController($rows){
+
+		for($i = count($rows) - 1; $i > -1; $i--){
+			$class = $this->segmentsToClass(array_slice($rows, 0, $i + 1)) . 'Controller';
+			if(class_exists($class)){
+				$unused = array_slice($rows, $i + 1);
+				if($unused){
+					$action = reset($unused)->segment . 'Action';
+					if(method_exists($class, $action)){
+						array_shift($rows);
+					}else{
+						$action = 'indexAction';
+					}
+				}else{
+					$action = 'indexAction';
+				}
+				
+				if(method_exists($class, $action)){
+					return [true, [
+						'class' => $class,
+						'action' => $action,
+						'segments' => $rows ? $rows : null
+					]];
+				}
+				return [false, 'Action not Found'];
+			}
+		}
+
+		return [false, 'Controller not found'];
+		
+	}
+	function segmentsToClass($segments){
+		$classname = 'Controllers';
+		if($segments){
+			foreach($segments as $segment){
+				if($segment->rule->type == 'static'){
+					$classname .= '\\' . $this->strToClass($segment->rule->value);
+				}else if($segment->rule->type == 'variable'){
+					$classname .= '\\' . $this->strToClass( property_exists($segment, 'param') ?  $segment->param : $segment->rule->value);
+				}
+				
+			}
+
+			return $classname;
+		}
+		return false;
+	}
+	function strToClass($str){
+		$str = str_replace(array('-', '_', '.'), ' ', $str);
+		$str = preg_replace('@\s{2,}@', ' ', $str);
+		$str = ucwords($str);
+		$str = str_replace(' ', '', $str);
+		return $str;
 	}
 	function dispatch(){
 		if($this->routes){
-			$traceback_ids = $this->parseRoutes();
+			$parsed = $this->parseRoutes();
 
-			/*
-			echo "<pre>";
-			print_r($traceback_ids);
-			print_r($this->routes);
-			echo "</pre>";
-			*/
-			
+			if(isset($parsed['tracebacks'][0])){
+				$best_match = $this->routes[$parsed['tracebacks'][0]];
+
+				list($status, $message) = $this->findController($best_match->fullMatchedSegments());
+
+				if($status){
+					$controller = new $message['class']($best_match);
+					echo $controller->{$message['action']}();
+					return;
+				}
+			}
 		}
 
-		return $this->show404();
+		echo $this->show404();
 	}
 	function show404(){
-		echo '<p>page not found!</p>';
+		return '<p>page not found!</p>';
 	}
 }

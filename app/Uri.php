@@ -194,7 +194,13 @@ Class Uri {
 
 		$binding = !empty($rule->type) == 'variable' && !empty($this->bindings[$rule->value]) ? $this->bindings[$rule->value] : null;
 
-		return (object)['segment' => $segment, 'rule' => $rule, 'binding' =>  $binding];
+		
+		$variable = !empty($this->payload->pattern->variables[$seg_key]) ? $this->payload->pattern->variables[$seg_key] : null;
+		$param = null;
+		if($variable){
+			$param = $this->payload->params[$variable];
+		}
+		return (object)['segment' => $segment, 'rule' => $rule, 'binding' =>  $binding, 'param' => $param];
 	}
 	function uriParse($uri){
 		$result = (object) [
