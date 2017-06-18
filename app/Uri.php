@@ -38,6 +38,7 @@ Class Uri {
 			$arr = $key;
 		}
 
+
 		foreach($arr as $key => $val){
 			$this->bindings[$key] = $val;
 		}
@@ -66,7 +67,7 @@ Class Uri {
 		foreach($this->bindings as $param_name => $pattern){
 			$seg_key = array_search($param_name, $this->payload->pattern->variables);
 			if(is_numeric($seg_key)){
-				$segment = $this->payload->uri->segments[$seg_key];
+				//$segment = $this->payload->uri->segments[$seg_key];
 				$rule = $this->payload->pattern->rules[$seg_key];
 
 				$value = isset($this->payload->params[$param_name]) ? $this->payload->params[$param_name] : false;

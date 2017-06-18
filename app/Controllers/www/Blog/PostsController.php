@@ -7,4 +7,7 @@ class PostsController {
 	function indexAction(){
 		return 'hey index of posts';
 	}
+	function secondAction(){
+		return 'hey second action';
+	}
 }

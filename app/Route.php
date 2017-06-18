@@ -26,12 +26,68 @@ class Route {
 
 	var $context = [];
 
+	var $controller = false;
 	var $router_name;
 
 	function __construct($head, $pattern, $uri = null, $router_name = null){
 		$this->setRouter($router_name);
 		$this->load($head, $pattern, $uri);
+
 	}
+	function controller($controller = false){
+		$this->controller = $controller;
+
+		return $this;
+	}
+	function register($name = null){
+		$router = $this->getRouter();
+		$old = $this->traceback;
+
+		$this->traceback = $this->getTraceback($name);
+		$this->getRouter()->routes[$this->traceback] = $this;
+
+		if($old){
+			if(isset($router->globals[$old])){
+				$router->globals[$this->traceback] = $router->globals[$old];
+			}
+			if(isset($router->groups[$old])){
+				$router->groups[$this->traceback] = $router->groups[$old];
+			}
+			unset($router->routes[$old], $router->groups[$old], $router->globals[$old]);
+		}
+		
+
+		
+
+		return $this;
+	}
+	function getTraceback($name = null){
+		if(!$name){
+			$name = 'route-' . (count($this->getRouter()->routes) + 1);
+		}
+		$name = str_replace([' ', '/', '.', '\\'], '', $name);
+		$int = 0;
+		while(isset($this->getRouter()->routes[$name])){
+			$arr = explode('-', trim($name, '-'));
+			if(count($arr) < 2){
+				$name .= '-' . ($int += 1);
+			}else{
+				$last = array_pop($arr);
+				if(is_numeric($last)){
+					if($int){
+						$int += 1;
+					}else{
+						$int = $last + 1;
+					}
+					$name .= implode('-', $arr) . '-' . $int;
+				}else{
+					$name .= '-' . ($int += 1);
+				}
+			}
+		}
+		return $name;
+	}
+
 	function load($head, $pattern, $uri){
 		if($head){
 			$this->methods = array_map('ucwords', $head);
@@ -89,13 +145,23 @@ class Route {
 	}
 	function global(){
 		$this->type = 'global';
-		$this->global_traceback = count($this->getRouter()->globals);
+		$this->global_traceback = 'global-' . (count($this->getRouter()->globals) + 1);
+
+		if(preg_match('@route\-\d+@', $this->traceback)){
+			$this->register($this->global_traceback);
+		}
+		
 		$this->update();
 		return $this;
 	}
 	function group(){
 		$this->type = 'group';
-		$this->group_traceback = count($this->getRouter()->groups);
+		$this->group_traceback = 'group-' . (count($this->getRouter()->groups) + 1);
+
+		if(preg_match('@route\-\d+@', $this->traceback)){
+			$this->register($this->group_traceback);
+		}
+
 		$this->update();
 		return $this;
 	}
@@ -117,6 +183,111 @@ class Route {
 			return true;
 		}
 		return false;
+	}
+
+	function getController(){
+		if(is_callable($this->controller)){
+			return $this->callbackController($this->controller);
+		}else if(is_string($this->controller)){
+			return $this->selectController($this->controller);
+		}else{
+			return $this->findController($this->fullMatchedSegments());
+		}
+	}
+	function callbackController($callback){
+		if(is_callable($callback)){
+			return $callback($this);
+		}
+	}
+	function selectController($classAndAction){
+		@list($class, $action) = explode('@', $classAndAction);
+		if(!$action){
+			$action = 'indexAction';
+		}
+
+		if(!class_exists($class)){
+			return [false, 'Controller not found'];
+		}
+		if(!method_exists($class, $action)){
+			return [false, 'Action not found'];
+		}
+
+		return [true, [
+			'class' => $class,
+			'action' => $action,
+			'segments' => $this->unmatched(),
+		]];
+	}
+	function findController($rows){
+		if(count($rows)){
+			for($i = count($rows) - 1; $i > -1; $i--){
+				$class = $this->segmentsToClass(array_slice($rows, 0, $i + 1)) . 'Controller';
+				if(class_exists($class)){
+					$unused = array_slice($rows, $i + 1);
+					if($unused){
+						$action = reset($unused)->segment . 'Action';
+						if(method_exists($class, $action)){
+							array_shift($rows);
+						}else{
+							$action = 'indexAction';
+						}
+					}else{
+						$action = 'indexAction';
+					}
+					
+					if(method_exists($class, $action)){
+						return [true, [
+							'class' => $class,
+							'action' => $action,
+							'segments' => $rows ? $rows : null
+						]];
+					}
+					return [false, 'Action not Found'];
+				}
+			}
+
+			return [false, 'Controller not found'];
+		}
+
+		$class = 'Controllers\IndexController';
+		$action = 'indexAction';
+
+		if(!class_exists($class)){
+			return [false, 'Controller not found'];
+		}
+		if(!method_exists($class, $action)){
+			return [false, 'Action not found'];
+		}
+
+		return [true, [
+			'class' => $class,
+			'action' => $action,
+			'segments' => $this->unmatched(),
+		]];
+		
+	}
+	function segmentsToClass($segments){
+		$classname = 'Controllers';
+		if($segments){
+			foreach($segments as $segment){
+				if($segment->rule->type == 'static'){
+					$classname .= '\\' . $this->strToClass($segment->rule->value);
+				}else if($segment->rule->type == 'variable'){
+					$classname .= '\\' . $this->strToClass( property_exists($segment, 'param') ?  $segment->param : $segment->rule->value);
+				}
+				
+			}
+
+			return $classname;
+		}
+		return false;
+	}
+	function strToClass($str){
+		$str = str_replace(array('-', '_', '.'), ' ', $str);
+		$str = preg_replace('@\s{2,}@', ' ', $str);
+		$str = ucwords($str);
+		$str = str_replace(' ', '', $str);
+		return $str;
 	}
 
 	function __call($name, $params){
@@ -155,8 +326,7 @@ class Route {
 		}
 
 		$r = new self($head, $pattern, $uri, $router_name);
-		$r->traceback = count($r->getRouter()->routes);
-		$r->getRouter()->routes[] = $r;
+		$r->register();
 		return $r;
 	}
 

@@ -14,12 +14,12 @@ class Router {
 		if(!$name){
 			$name = Config::get('app.router.default_name');
 		}
-		$this->registerRouter($name);
+		$this->register($name);
 
 		$this->original = $this->components();
 		$this->components = clone $this->original;
 	}
-	function registerRouter($name){
+	function register($name){
 		$this->name = $name;
 		self::$routers[$name] = $this;
 	}
@@ -43,40 +43,40 @@ class Router {
 	}
 	function components(){
 		$obj = (object) [
-			'subdomain' => false,
-			'host' => $_SERVER['HTTP_HOST'],
-			'uri' => $_SERVER['REQUEST_URI'],
+			'url' => self::getUrl(),
 			'method' => $_SERVER['REQUEST_METHOD'],
+			'document_root' => $_SERVER['DOCUMENT_ROOT'],
+			'site_root' => getcwd(),
 		];
 
-		$host = explode('.', $obj->host);
+		$obj->document_to_site = str_replace($obj->document_root, '', $obj->site_root);
 
-		if(count($host) > 2){
-			$obj->subdomain = implode('.', array_slice($host, 0, -2));
-			$obj->host = trim(str_replace($obj->subdomain, '', $obj->host), '.');
-		}
+		$obj->subdomain = extract_subdomains($_SERVER['HTTP_HOST']);
+		$obj->host = extract_domain($_SERVER['HTTP_HOST']);
+		$obj->uri = explode('?', $_SERVER['REQUEST_URI'])[0];
 
 		return $obj;
 	}
 	
-	function global($pattern, &$uri, $callback){
+	function global($pattern, $uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->global();
 
-		$this->globals[] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
+		$this->globals[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 		
 		if($r->isMatched()){
 			if(is_callable($callback)){
-				$callback($uri, $r->unused(), $r->params(), $r);
+				$callback($r, $this);
 			}
 		}
+
 		return $r;
 	}
 	function group($pattern, &$uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->group();
 
-		$this->groups[] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
+		$this->groups[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 
 		if($r->isMatched()){
 			if(is_callable($callback)){
@@ -89,11 +89,21 @@ class Router {
 			return false;
 		}
 		$scores = [];
+
 		foreach($this->routes as $key => $r){
 			$r->update();
 
 			if($r->type == 'global'){
+				/*
+				$global = $this->globals[$r->global_traceback];
+
+				$callback = $global['callback'];
+				if($r->isMatched()){
+					$callback($r, $this);
+				}
 				
+				*/
+
 			}else if($r->type == 'group'){
 
 			}else{
@@ -105,68 +115,13 @@ class Router {
 		asort($scores);
 		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
 	}
-	function findController($rows){
-
-		for($i = count($rows) - 1; $i > -1; $i--){
-			$class = $this->segmentsToClass(array_slice($rows, 0, $i + 1)) . 'Controller';
-			if(class_exists($class)){
-				$unused = array_slice($rows, $i + 1);
-				if($unused){
-					$action = reset($unused)->segment . 'Action';
-					if(method_exists($class, $action)){
-						array_shift($rows);
-					}else{
-						$action = 'indexAction';
-					}
-				}else{
-					$action = 'indexAction';
-				}
-				
-				if(method_exists($class, $action)){
-					return [true, [
-						'class' => $class,
-						'action' => $action,
-						'segments' => $rows ? $rows : null
-					]];
-				}
-				return [false, 'Action not Found'];
-			}
-		}
-
-		return [false, 'Controller not found'];
-		
-	}
-	function segmentsToClass($segments){
-		$classname = 'Controllers';
-		if($segments){
-			foreach($segments as $segment){
-				if($segment->rule->type == 'static'){
-					$classname .= '\\' . $this->strToClass($segment->rule->value);
-				}else if($segment->rule->type == 'variable'){
-					$classname .= '\\' . $this->strToClass( property_exists($segment, 'param') ?  $segment->param : $segment->rule->value);
-				}
-				
-			}
-
-			return $classname;
-		}
-		return false;
-	}
-	function strToClass($str){
-		$str = str_replace(array('-', '_', '.'), ' ', $str);
-		$str = preg_replace('@\s{2,}@', ' ', $str);
-		$str = ucwords($str);
-		$str = str_replace(' ', '', $str);
-		return $str;
-	}
 	function dispatch(){
 		if($this->routes){
 			$parsed = $this->parseRoutes();
 
 			if(isset($parsed['tracebacks'][0])){
 				$best_match = $this->routes[$parsed['tracebacks'][0]];
-
-				list($status, $message) = $this->findController($best_match->fullMatchedSegments());
+				list($status, $message) = $best_match->getController();
 
 				if($status){
 					$controller = new $message['class']($best_match);
@@ -178,7 +133,24 @@ class Router {
 
 		echo $this->show404();
 	}
+
+	static function getUrl(){
+		return self::getProtocol() . $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+	}
+	static function getProtocol(){
+		if (isset($_SERVER['HTTPS']) &&
+		    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
+		    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+		    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+		  $protocol = 'https://';
+		}
+		else {
+		  $protocol = 'http://';
+		}
+		return $protocol;
+	}
 	function show404(){
 		return '<p>page not found!</p>';
 	}
 }
+

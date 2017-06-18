@@ -1,8 +1,9 @@
 <?php 
 $files = [
-	'mysqli.functions.php',
-	'Files.php',
 	'Arrays.php',
+	'Files.php',
+	'Mysqli.php',
+	'Urls.php',
 ];
 
 foreach($files as $file){

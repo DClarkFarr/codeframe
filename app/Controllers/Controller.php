@@ -4,17 +4,23 @@ namespace Controllers;
 class Controller {
 	var $route;
 
-
 	var $get;
+	
 	function __construct($route){
 		$this->route = $route;
 
 		$this->get = (object) ['params' => [], 'uri' => []];
 
-		$this->parseSegments();
+		$this->makeGetFromRoute();
+
+		$this->initialize();
 	}
 
-	function parseSegments(){
+	function initialize(){
+
+	}
+
+	function makeGetFromRoute(){
 		$segments = arrays_add($this->route->matched(), $this->route->unmatched());
 		if(!$segments){
 			return;
