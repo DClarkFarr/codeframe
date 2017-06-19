@@ -15,8 +15,6 @@ class Route {
 	var $methods;
 	var $component;
 	var $component_class = 'Uri';
-	var $component_uri;
-	var $component_pattern;
 
 	var $type = 'route';
 	var $traceback;
@@ -33,6 +31,7 @@ class Route {
 		$this->setRouter($router_name);
 		$this->load($head, $pattern, $uri);
 
+		return $this;
 	}
 	function controller($controller = false){
 		$this->controller = $controller;
@@ -88,18 +87,12 @@ class Route {
 		return $name;
 	}
 
-	function load($head, $pattern, $uri){
+	function load($head, $pattern, $uri = null){
 		if($head){
 			$this->methods = array_map('ucwords', $head);
 		}
-		if($pattern){
-			$this->component_pattern = $pattern;
-		}
-		if($uri){
-			$this->component_uri = $uri ? $uri : $this->componentUri();
-		}
-		
-		$this->component = new $this->component_class($this->component_uri, $this->component_pattern);
+
+		$this->component = (new $this->component_class($uri, $pattern))->setRoute($this)->update();
 	}
 	function contextMatchedUri(){
 		$str = "";
@@ -154,6 +147,25 @@ class Route {
 		$this->update();
 		return $this;
 	}
+	function callback(){
+		if($this->isMatched()){
+			$router = $this->getRouter();
+
+			
+
+			if($this->type == 'global'){
+				$callback = $router->globals[$this->global_traceback];
+			}else if($this->type == 'group'){
+				$callback = $router->groups[$this->group_traceback];
+			}
+
+			if(is_callable($callback['callback'])){
+				$callback['callback']($this, $router);
+			}
+		}
+		return $this;
+
+	}
 	function group(){
 		$this->type = 'group';
 		$this->group_traceback = 'group-' . (count($this->getRouter()->groups) + 1);
@@ -165,16 +177,7 @@ class Route {
 		$this->update();
 		return $this;
 	}
-	function componentUri(){
-		$cc = strtolower($this->component_class);
-		if($cc == 'uri'){
-			return $this->getRouter()->components->uri;
-		}else if($cc == 'host'){
-			return $this->getRouter()->host;
-		}else if($cc == 'subdomain'){
-			return $this->getRouter()->subdomain;
-		}
-	}
+	
 	function getRouter(){
 		return Router::get($this->router_name);
 	}

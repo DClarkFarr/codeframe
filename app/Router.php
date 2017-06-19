@@ -58,31 +58,29 @@ class Router {
 		return $obj;
 	}
 	
-	function global($pattern, $uri, $callback){
+	function global($pattern, $uri, $callback = null){
+		if(is_callable($uri)){
+			$callback = $uri;
+			$uri = null;
+		}
 		$r = Route::any($pattern, $uri);
 		$r->global();
 
 		$this->globals[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 		
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($r, $this);
-			}
-		}
-
 		return $r;
 	}
-	function group($pattern, &$uri, $callback){
+	function group($pattern, $uri, $callback = null){
+		if(is_callable($uri)){
+			$callback = $uri;
+			$uri = null;
+		}
 		$r = Route::any($pattern, $uri);
 		$r->group();
 
 		$this->groups[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($uri, $r->unused(), $r->params(), $r);
-			}
-		}
+		return $r;
 	}
 	function parseRoutes(){
 		if(!$this->routes){

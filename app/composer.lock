@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
+    "hash": "955b233fca6443ae6d57baa1a0bdf6ae",
     "content-hash": "7ab93163f00539f17d4c2b3784d85e8f",
     "packages": [
         {
@@ -79,12 +80,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/cache.git",
-                "reference": "9a8a11a6a2fee301d42eb6924f2de7baf1e02e75"
+                "reference": "7768ede3eca6a915e7bf94d7c5a60148ad5b77f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/cache/zipball/9a8a11a6a2fee301d42eb6924f2de7baf1e02e75",
-                "reference": "9a8a11a6a2fee301d42eb6924f2de7baf1e02e75",
+                "url": "https://api.github.com/repos/illuminate/cache/zipball/7768ede3eca6a915e7bf94d7c5a60148ad5b77f7",
+                "reference": "7768ede3eca6a915e7bf94d7c5a60148ad5b77f7",
                 "shasum": ""
             },
             "require": {
@@ -121,7 +122,7 @@
             ],
             "description": "The Illuminate Cache package.",
             "homepage": "https://laravel.com",
-            "time": "2017-06-14 21:37:45"
+            "time": "2017-06-19 13:31:23"
         },
         {
             "name": "illuminate/container",
@@ -214,12 +215,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/database.git",
-                "reference": "3d946a1e8efc2f30767868fc119d2b165991d753"
+                "reference": "7d852f1311036f8e59ad9da7f60c9ea59358ecd3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/database/zipball/3d946a1e8efc2f30767868fc119d2b165991d753",
-                "reference": "3d946a1e8efc2f30767868fc119d2b165991d753",
+                "url": "https://api.github.com/repos/illuminate/database/zipball/7d852f1311036f8e59ad9da7f60c9ea59358ecd3",
+                "reference": "7d852f1311036f8e59ad9da7f60c9ea59358ecd3",
                 "shasum": ""
             },
             "require": {
@@ -266,7 +267,7 @@
                 "orm",
                 "sql"
             ],
-            "time": "2017-06-17 01:40:37"
+            "time": "2017-06-19 13:26:33"
         },
         {
             "name": "illuminate/events",
@@ -369,12 +370,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/session.git",
-                "reference": "783c344781b313ae8056f7880181590f512ae01b"
+                "reference": "ad5778ecaa79909cd2f31d8aa22db57094ef1a58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/session/zipball/783c344781b313ae8056f7880181590f512ae01b",
-                "reference": "783c344781b313ae8056f7880181590f512ae01b",
+                "url": "https://api.github.com/repos/illuminate/session/zipball/ad5778ecaa79909cd2f31d8aa22db57094ef1a58",
+                "reference": "ad5778ecaa79909cd2f31d8aa22db57094ef1a58",
                 "shasum": ""
             },
             "require": {
@@ -412,7 +413,7 @@
             ],
             "description": "The Illuminate Session package.",
             "homepage": "https://laravel.com",
-            "time": "2017-05-30 13:53:07"
+            "time": "2017-06-19 13:25:08"
         },
         {
             "name": "illuminate/support",

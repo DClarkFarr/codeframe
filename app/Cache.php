@@ -8,6 +8,8 @@ class Cache {
 	static $instance;
 
 	static function bootstrap(){
+		makeDir(Config::get('app.cache.path'));
+
 		$app = new Illuminate\Container\Container();
 		$app->singleton('files', function(){
 		    return new Illuminate\Filesystem\Filesystem();
@@ -25,8 +27,19 @@ class Cache {
 
 		$cacheManager = new CacheManager($app);
 
-		self::$instance = $cacheManager->driver();
+		self::$instance = $cacheManager->driver();	
+	}
 
+	static function put($key, $val = null, $minutes = null){
+		if(!$minutes){
+			$minutes = (60 * 24 * 2); //two days by default
+		}
+		if(!is_array($key)){
+			$key = [$key => $val];
+		}
+		foreach($key as $k => $v){
+			self::$instance->put($k, $v, $minutes);
+		}
 	}
 
 	static function __callStatic($name, $args){
@@ -35,10 +48,11 @@ class Cache {
 		}
 
 		if(method_exists(self::$instance, $name)){
-			return call_user_func_array([self::$instance, $name], $args);
+			$res = call_user_func_array([self::$instance, $name], $args);
+			return $res;
 		}
 
-		throw new \Exception('Cacke::' . $name . '() does not exist');
+		throw new \Exception('Cache::' . $name . '() does not exist');
 	}
 }
 

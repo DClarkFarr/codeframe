@@ -10,12 +10,12 @@ return [
 		'default_name' => 'default',
 	),
 	'cache' => array(
-		'path' => realpath(__DIR__ . '/../storage/cache/'),
+		'path' => realpath(__DIR__ . '/../') . '/storage/cache/',
 	),
 	'paths' => array(
 		'application' => realpath( __DIR__ . '/../'),
-		'controllers' => realpath( __DIR__ . '/../Controllers'),
-		'models' => realpath( __DIR__ . '/../Models'),
-		'routes' => realpath( __DIR__ . '/../routes'),
+		'controllers' => realpath( __DIR__ . '/../') . '/Controllers',
+		'models' => realpath( __DIR__ . '/../') . '/Models',
+		'routes' => realpath( __DIR__ . '/../') . '/routes',
 	),
 ];

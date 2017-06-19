@@ -5,7 +5,7 @@ $router = Router::get();
 Config::put('locale', 'en');
 
 
-$router->global('{locale}', $router->components->uri, function($route, $router){
+$router->global('{locale}', function($route, $router){
 	
 	$params = $route->component->payload->params;
 	if(!empty($params['locale'])){
@@ -13,13 +13,13 @@ $router->global('{locale}', $router->components->uri, function($route, $router){
 		$router->components->uri = $route->unused();
 	}
 
-})->where('locale', '^[a-z]{2}$');
+})->where('locale', '^[a-z]{2}$')->callback();
 
-Route::get('/', $router->components->uri);
+Route::get('/');
 
-Route::get('your-mom', $router->components->uri)->register('your.mom');
+Route::get('your-mom')->register('your.mom');
 
-Route::get('blog/{your-mom}', $router->components->uri)
+Route::get('blog/{your-mom}')
 	->where(['your-mom' => '\w+'])
 	->register('blog')
 	->controller(function($route){
@@ -30,19 +30,18 @@ Route::get('blog/{your-mom}', $router->components->uri)
 		]];
 	});
 
-$router->group('blog', $router->components->uri, function(&$uri, $unused_uri, $params, $route){
+$router->group('blog', function($route, $router){
 	
-	Route::get('posts/{id}', $unused_uri)
+	Route::get('posts/{id}', $route->unused())
 		->chain($route)
 		->where(['id' => '\d+'])
-		->register('posts')
-		->controller('Controllers\Blog\PostsController@secondAction');
+		->register('posts');
 
-});
+})->callback();
 
-Route::get('news', $router->components->uri)->register('news');
+Route::get('news')->register('news');
 
-$router->route()->put('about-us', $router->components->uri)->register('about');
+$router->route()->put('about-us')->register('about');
 
 
 /*
