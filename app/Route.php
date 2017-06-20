@@ -225,6 +225,7 @@ class Route {
 		if(count($rows)){
 			for($i = count($rows) - 1; $i > -1; $i--){
 				$class = $this->segmentsToClass(array_slice($rows, 0, $i + 1)) . 'Controller';
+
 				if(class_exists($class)){
 					$unused = array_slice($rows, $i + 1);
 					if($unused){
@@ -252,7 +253,7 @@ class Route {
 			return [false, 'Controller not found'];
 		}
 
-		$class = 'Controllers\IndexController';
+		$class = App::namespaces()->controllers . '\\IndexController';
 		$action = 'indexAction';
 
 		if(!class_exists($class)){
@@ -270,7 +271,7 @@ class Route {
 		
 	}
 	function segmentsToClass($segments){
-		$classname = 'Controllers';
+		$classname = App::namespaces()->controllers;
 		if($segments){
 			foreach($segments as $segment){
 				if($segment->rule->type == 'static'){

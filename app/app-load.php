@@ -19,3 +19,5 @@ include __DIR__ . '/Router.php';
 include __DIR__ . '/Session.php';
 
 include __DIR__ . '/Uri.php';
+
+include __DIR__ . '/Controllers/Controller.php';
