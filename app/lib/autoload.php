@@ -3,6 +3,7 @@ $files = [
 	'Arrays.php',
 	'Files.php',
 	'Mysqli.php',
+	'Strings.php',
 	'Urls.php',
 ];
 

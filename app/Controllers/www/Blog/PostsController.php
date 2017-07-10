@@ -8,6 +8,9 @@ class PostsController {
 		return 'hey index of posts';
 	}
 	function secondAction(){
-		return 'hey second action';
+		return 'hey posts second action';
+	}
+	function categoriesAction(){
+		return 'hey posts categories';
 	}
 }

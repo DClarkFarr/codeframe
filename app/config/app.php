@@ -13,9 +13,7 @@ return [
 		'path' => realpath(__DIR__ . '/../storage/cache/'),
 	),
 	'paths' => array(
-		'application' => realpath( __DIR__ . '/../'),
-		'controllers' => realpath( __DIR__ . '/../Controllers'),
+		'application' => APPLICATION_ROOT,
 		'models' => realpath( __DIR__ . '/../Models'),
-		'routes' => realpath( __DIR__ . '/../routes'),
 	),
 ];

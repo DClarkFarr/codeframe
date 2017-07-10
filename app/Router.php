@@ -5,6 +5,7 @@ class Router {
 	var $routes = [];
 	var $globals = [];
 	var $groups = [];
+	var $mvcs = [];
 
 	var $components;
 	var $original;
@@ -63,26 +64,17 @@ class Router {
 		$r->global();
 
 		$this->globals[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
-		
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($r, $this);
-			}
-		}
 
 		return $r;
 	}
-	function group($pattern, &$uri, $callback){
+
+	function group($pattern, $uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->group();
 
 		$this->groups[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($uri, $r->unused(), $r->params(), $r);
-			}
-		}
+		return $r;
 	}
 	function parseRoutes(){
 		if(!$this->routes){
@@ -115,23 +107,129 @@ class Router {
 		asort($scores);
 		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
 	}
+	function parseMvcs(){
+		if(!$this->mvcs){
+			return;
+		}
+		$scores = [];
+
+		foreach($this->mvcs as $key => $result){
+			$scores[$key] = strlen(implode('/', $result['segments']));
+		}
+		asort($scores);
+		return ['scores' => $scores, 'mvcs' => $this->mvcs];
+	}
 	function dispatch(){
 		if($this->routes){
-			$parsed = $this->parseRoutes();
+			$parsedRoutes = $this->parseRoutes();
+			$parsedMvcs = $this->parseMvcs();
 
-			if(isset($parsed['tracebacks'][0])){
-				$best_match = $this->routes[$parsed['tracebacks'][0]];
-				list($status, $message) = $best_match->getController();
+			$mvc_score = $mvc = false;
+			if(isset($parsedMvcs['scores'][0])){
+				$mvc_score = $parsedMvcs['scores'][0];
+				$mvc = $parsedMvcs['mvcs'][0];
+			}	
 
-				if($status){
-					$controller = new $message['class']($best_match);
+			if(isset($parsedRoutes['tracebacks'][0])){
+				$route_traceback = $parsedRoutes['tracebacks'][0];
+				$route_score = $parsedRoutes['scores'][$route_traceback];
+
+				$route = $this->routes[$route_traceback];
+
+				list($status, $message) = $route->getController();
+
+				if($status && ((is_numeric($mvc_score) && $route_score <= $mvc_score) || $mvc_score === false)){
+					$controller = new $message['class']($route);
 					echo $controller->{$message['action']}();
 					return;
 				}
 			}
+
+			if(!empty($mvc)){
+				$controller = new $mvc['controller']($mvc['route']);
+				echo $controller->{$mvc['action']}();
+				return;
+			}
 		}
 
 		echo $this->show404();
+	}
+	function MVCtoController($uri, $controllers_dir){
+		$route = Route::any(null, $uri)->update();
+		
+		$segments = $route->all();
+		$shifted = false;
+		
+		$controller_segments = [];
+		while($segments){
+			$controller_segments[] = $segments[0];
+
+			$class = $route->segmentsToClass($controller_segments);
+			if(class_exists($class . 'Controller')){
+				array_shift($segments);
+			}else{
+				array_pop($controller_segments);
+				break;
+			}
+		}
+
+		$controller_class = 'not found';
+
+		if(count($route->all()) < 1){
+			$controller_class = 'indexController';
+		}
+		
+		if(!empty($controller_segments)){
+			$controller_class = $route->segmentsToClass($controller_segments) . 'Controller';
+		}
+		
+
+		if(!class_exists($controller_class)){
+			echo 'class does not exist';
+			return false;
+		}
+
+		$pattern = '';
+		foreach($controller_segments as $s){
+			$pattern .= ($pattern ? '/' : '') . $s->segment;
+		}
+
+		$action = 'not found';
+		if(count($route->all()) < 2){
+			
+		}
+
+		if($segments){
+			$action_segment = $segments[0];
+			$action_method = $route->strToClass($action_segment->segment) . 'Action';
+			if(method_exists($controller_class, $action_method)){
+				$segment = array_shift($segments);
+				$action = $action_method;
+				$pattern .= ($pattern ? '/' : '') . $action_segment->segment;
+			}
+		}else{
+			$action = 'indexAction';
+		}
+
+		if(!method_exists($controller_class, $action)){
+			//echo 'action not found';
+			return false;
+		}
+
+		$route->load(false, $pattern, false);
+		$route->update();
+
+		$segment_slugs = [];
+		foreach($segments as $s){
+			$segment_slugs[] = $s->segment;
+		}
+
+		$this->mvcs[] = [
+			'controller' => $controller_class,
+			'action' => $action,
+			'segments' => $segment_slugs,
+			'route' => $route,
+		];
 	}
 
 	static function getUrl(){

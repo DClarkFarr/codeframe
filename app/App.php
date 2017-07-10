@@ -16,9 +16,9 @@ class App {
 		Cache::bootstrap();
 
 		self::registerNamespaces([
-			'Controllers' => Config::get('app.paths.controllers'),
 			'Models' => Config::get('app.paths.models'),
-			'routes' => Config::get('app.paths.routes'),
+			'Controllers' => CONTROLLERS_PATH,
+			'routes' => ROUTES_PATH,
 		]);
 		
 	}

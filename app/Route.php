@@ -56,8 +56,30 @@ class Route {
 			unset($router->routes[$old], $router->groups[$old], $router->globals[$old]);
 		}
 		
+		return $this;
+	}
+	function run(){
+		$this->update();
 
-		
+		if(!empty($this->global_traceback)){
+			$global = $this->getRouter()->globals[$this->global_traceback];
+			$callback = $global['callback'];
+			if($this->isMatched()){
+				if(is_callable($callback)){
+					$callback($this, $this->getRouter());
+				}
+			}
+		}
+
+		if(!empty($this->group_traceback)){
+			$group = $this->getRouter()->groups[$this->group_traceback];
+			$callback = $group['callback'];
+			if($this->isMatched()){
+				if(is_callable($callback)){
+					$callback($this, $this->getRouter());
+				}
+			}
+		}
 
 		return $this;
 	}
@@ -143,6 +165,7 @@ class Route {
 		$this->router_name = $router_name;
 		return $this;
 	}
+
 	function global(){
 		$this->type = 'global';
 		$this->global_traceback = 'global-' . (count($this->getRouter()->globals) + 1);
@@ -270,7 +293,9 @@ class Route {
 		$classname = 'Controllers';
 		if($segments){
 			foreach($segments as $segment){
-				if($segment->rule->type == 'static'){
+				if(empty($segment->rule)){
+					$classname .= '\\' . $this->strToClass($segment->segment);
+				}else if($segment->rule->type == 'static'){
 					$classname .= '\\' . $this->strToClass($segment->rule->value);
 				}else if($segment->rule->type == 'variable'){
 					$classname .= '\\' . $this->strToClass( property_exists($segment, 'param') ?  $segment->param : $segment->rule->value);

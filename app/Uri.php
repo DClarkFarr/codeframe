@@ -108,7 +108,14 @@ Class Uri {
 
 		return $this->payload;
 	}
-	
+	function all(){
+		$result = [];
+		foreach($this->payload->segments as $seg_key => $matched){
+			$result[] = $this->fetchResultset($seg_key);
+		}
+
+		return $result;
+	}
 	function matched(){
 		$result = [];
 		foreach($this->payload->segments as $seg_key => $matched){
@@ -161,7 +168,7 @@ Class Uri {
 
 		$pattern_result = $this->patternParse($pattern);
 		$uri_result = $this->uriParse($uri);
-		$result = (object)['matched' => true, 'uri' => $uri_result, 'pattern' => $pattern_result, 'params' => [], 'segments' => []];
+		$result = (object)['matched' => ($pattern ? true : false), 'uri' => $uri_result, 'pattern' => $pattern_result, 'params' => [], 'segments' => []];
 
 		$loops = max(count($pattern_result->rules), count($uri_result->segments));
 		for($key = 0; $key < $loops; $key++){
@@ -185,7 +192,7 @@ Class Uri {
 				}
 			}
 		}
-			
+		
 		return $result;
 	}
 	function fetchResultset($seg_key){
