@@ -4,6 +4,8 @@ Class Uri {
 	var $uri = "";
 	var $pattern;
 
+	var $route;
+
 	var $regex;
 
 	var $bindings;
@@ -23,20 +25,43 @@ Class Uri {
 
 		$this->regex = (object) array_merge($default_regex, $regex);
 
-		$this->load($uri, $pattern, $auto);
+		$this->set($uri, $pattern);
+
+		if($auto){
+			$this->payload();
+		}
 
 		return $this;
-	}	
-	function uri($uri){
-		$this->uri = $uri;
-		return $this->load($this->uri, $this->pattern, true);
 	}
+
+	function set($uri, $pattern){
+		$this->uri = $uri;
+		$this->pattern = $pattern;
+
+		return $this;
+	}
+	function setRoute($route){
+		$this->route = $route;
+		return $this;
+	}
+	function getUri(){
+		$str = $this->uri === null ? $this->getRouter()->components->uri : $this->uri;
+		return $str;
+	}	
+	function getRoute(){
+		return $this->route;
+	}
+	function getRouter(){
+		return $this->route->getRouter();
+	}
+	
 	function where($key, $val = '', $apply = true){
 		if(!is_array($key)){
 			$arr = [$key => $val];
 		}else{
 			$arr = $key;
 		}
+
 
 		foreach($arr as $key => $val){
 			$this->bindings[$key] = $val;
@@ -47,17 +72,7 @@ Class Uri {
 		}
 		return $this;
 	}
-	function load($uri, $pattern, $auto = null){
-		$this->uri = $uri;
-		$this->pattern = $pattern;
 
-		if($uri && $pattern && $auto){
-			$this->payload();
-		}else{
-			$this->parse();
-		}
-		return $this;
-	}
 	function bind(){
 		if(empty($this->bindings)){
 			return $this;
@@ -66,7 +81,7 @@ Class Uri {
 		foreach($this->bindings as $param_name => $pattern){
 			$seg_key = array_search($param_name, $this->payload->pattern->variables);
 			if(is_numeric($seg_key)){
-				$segment = $this->payload->uri->segments[$seg_key];
+				//$segment = $this->payload->uri->segments[$seg_key];
 				$rule = $this->payload->pattern->rules[$seg_key];
 
 				$value = isset($this->payload->params[$param_name]) ? $this->payload->params[$param_name] : false;
@@ -85,7 +100,10 @@ Class Uri {
 		return $this;
 	}
 	function update(){
-		$this->payload();
+		$this->payload = $this->parse();
+
+		$this->bind();
+
 		return $this;
 	}
 
@@ -101,13 +119,17 @@ Class Uri {
 		return count(get_object_vars($this->payload)) > 0 ? 1 : 0;
 	}
 	function payload(){
-		$this->payload = $this->parse();
-
-		$this->bind();
-
+		$this->update();
 		return $this->payload;
 	}
-	
+	function all(){
+		$result = [];
+		foreach($this->payload->segments as $seg_key => $matched){
+			$result[] = $this->fetchResultset($seg_key);
+		}
+
+		return $result;
+	}
 	function matched(){
 		$result = [];
 		foreach($this->payload->segments as $seg_key => $matched){
@@ -152,7 +174,7 @@ Class Uri {
 	//util functions
 	function parse($uri = null, $pattern = null){
 		if($uri === null){
-			$uri = $this->uri;
+			$uri = $this->getUri();
 		}
 		if($pattern === null){
 			$pattern = $this->pattern;
@@ -160,7 +182,8 @@ Class Uri {
 
 		$pattern_result = $this->patternParse($pattern);
 		$uri_result = $this->uriParse($uri);
-		$result = (object)['matched' => true, 'uri' => $uri_result, 'pattern' => $pattern_result, 'params' => [], 'segments' => []];
+
+		$result = (object)['matched' => ($pattern ? true : false), 'uri' => $uri_result, 'pattern' => $pattern_result, 'params' => [], 'segments' => []];
 
 		$loops = max(count($pattern_result->rules), count($uri_result->segments));
 		for($key = 0; $key < $loops; $key++){
@@ -184,7 +207,7 @@ Class Uri {
 				}
 			}
 		}
-			
+		
 		return $result;
 	}
 	function fetchResultset($seg_key){
@@ -194,7 +217,13 @@ Class Uri {
 
 		$binding = !empty($rule->type) == 'variable' && !empty($this->bindings[$rule->value]) ? $this->bindings[$rule->value] : null;
 
-		return (object)['segment' => $segment, 'rule' => $rule, 'binding' =>  $binding];
+		
+		$variable = !empty($this->payload->pattern->variables[$seg_key]) ? $this->payload->pattern->variables[$seg_key] : null;
+		$param = null;
+		if($variable){
+			$param = $this->payload->params[$variable];
+		}
+		return (object)['segment' => $segment, 'rule' => $rule, 'binding' =>  $binding, 'param' => $param];
 	}
 	function uriParse($uri){
 		$result = (object) [

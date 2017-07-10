@@ -5,6 +5,7 @@ class Router {
 	var $routes = [];
 	var $globals = [];
 	var $groups = [];
+	var $mvcs = [];
 
 	var $components;
 	var $original;
@@ -14,12 +15,12 @@ class Router {
 		if(!$name){
 			$name = Config::get('app.router.default_name');
 		}
-		$this->registerRouter($name);
+		$this->register($name);
 
 		$this->original = $this->components();
 		$this->components = clone $this->original;
 	}
-	function registerRouter($name){
+	function register($name){
 		$this->name = $name;
 		self::$routers[$name] = $this;
 	}
@@ -28,7 +29,6 @@ class Router {
 
 		$router = new self;
 
-		$router->includeRoutes();
 	}
 	static function get($name = null){
 		if(!$name){
@@ -44,99 +44,218 @@ class Router {
 	}
 	function components(){
 		$obj = (object) [
-			'subdomain' => false,
-			'host' => $_SERVER['HTTP_HOST'],
-			'uri' => $_SERVER['REQUEST_URI'],
+			'url' => self::getUrl(),
 			'method' => $_SERVER['REQUEST_METHOD'],
+			'document_root' => $_SERVER['DOCUMENT_ROOT'],
+			'site_root' => getcwd(),
 		];
 
-		$host = explode('.', $obj->host);
+		$obj->document_to_site = str_replace($obj->document_root, '', $obj->site_root);
 
-		if(count($host) > 2){
-			$obj->subdomain = implode('.', array_slice($host, 0, -2));
-			$obj->host = trim(str_replace($obj->subdomain, '', $obj->host), '.');
-		}
+		$obj->subdomain = extract_subdomains($_SERVER['HTTP_HOST']);
+		$obj->host = extract_domain($_SERVER['HTTP_HOST']);
+		$obj->uri = explode('?', $_SERVER['REQUEST_URI'])[0];
 
 		return $obj;
 	}
-	function includeRoutes($path = null){
-		if(!$path){
-			$path = Config::get('app.routes.path');
+	
+	function global($pattern, $uri, $callback = null){
+		if(is_callable($uri)){
+			$callback = $uri;
+			$uri = null;
 		}
-		
-
-		if(is_file($path)){
-			include $path;
-		}else if(is_dir($path)){
-			foreach(scandir($path) as $file){
-				if(is_file(rtrim($path, '/') . '/' . $file)){
-					include rtrim($path, '/') . '/' . $file;
-				}
-				
-			}
-		}
-	}
-	function global($pattern, &$uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->global();
 
-		$this->globals[] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
-		
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($uri, $r->unused(), $r->params(), $r);
-			}
-		}
+		$this->globals[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
+
 		return $r;
 	}
-	function group($pattern, &$uri, $callback){
+
+	function group($pattern, $uri, $callback){
 		$r = Route::any($pattern, $uri);
 		$r->group();
 
-		$this->groups[] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
+		$this->groups[$r->traceback] = array('pattern' => $pattern, 'uri' => $uri, 'callback' => $callback);
 
-		if($r->isMatched()){
-			if(is_callable($callback)){
-				$callback($uri, $r->unused(), $r->params(), $r);
-			}
-		}
+		return $r;
 	}
 	function parseRoutes(){
 		if(!$this->routes){
 			return false;
 		}
-		$matched = [];
+		$scores = [];
+
 		foreach($this->routes as $key => $r){
 			$r->update();
 
 			if($r->type == 'global'){
+				/*
+				$global = $this->globals[$r->global_traceback];
+
+				$callback = $global['callback'];
+				if($r->isMatched()){
+					$callback($r, $this);
+				}
 				
+				*/
+
 			}else if($r->type == 'group'){
 
 			}else{
 				if($r->isMatched()){
-					$matched[] = $r->traceback;
+					$scores[$r->traceback] = strlen($r->unused());
 				}
 			}
 		}
-		return $matched;
+		asort($scores);
+		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
+	}
+	function parseMvcs(){
+		if(!$this->mvcs){
+			return;
+		}
+		$scores = [];
+
+		foreach($this->mvcs as $key => $result){
+			$scores[$key] = strlen(implode('/', $result['segments']));
+		}
+		asort($scores);
+		return ['scores' => $scores, 'mvcs' => $this->mvcs];
 	}
 	function dispatch(){
 		if($this->routes){
-			$traceback_ids = $this->parseRoutes();
+			$parsedRoutes = $this->parseRoutes();
+			$parsedMvcs = $this->parseMvcs();
 
-			/*
-			echo "<pre>";
-			print_r($traceback_ids);
-			print_r($this->routes);
-			echo "</pre>";
-			*/
+			$mvc_score = $mvc = false;
+			if(isset($parsedMvcs['scores'][0])){
+				$mvc_score = $parsedMvcs['scores'][0];
+				$mvc = $parsedMvcs['mvcs'][0];
+			}	
+
+			if(isset($parsedRoutes['tracebacks'][0])){
+				$route_traceback = $parsedRoutes['tracebacks'][0];
+				$route_score = $parsedRoutes['scores'][$route_traceback];
+
+				$route = $this->routes[$route_traceback];
+
+				list($status, $message) = $route->getController();
+
+				if($status && ((is_numeric($mvc_score) && $route_score <= $mvc_score) || $mvc_score === false)){
+					$controller = new $message['class']($route);
+					echo $controller->{$message['action']}();
+					return;
+				}
+			}
+
+			if(!empty($mvc)){
+				$controller = new $mvc['controller']($mvc['route']);
+				echo $controller->{$mvc['action']}();
+				return;
+			}
+		}
+
+		echo $this->show404();
+	}
+	function MVCtoController($uri, $controllers_dir){
+		$route = Route::any(null, $uri)->update();
+		
+		$segments = $route->all();
+		$shifted = false;
+		
+		$controller_segments = [];
+		while($segments){
+			$controller_segments[] = $segments[0];
+
+			$class = $route->segmentsToClass($controller_segments);
+			//$class = implode('\\', explode('\\\\', $class));
+
+			if(class_exists($class . 'Controller')){
+				array_shift($segments);
+
+			}else{
+				array_pop($controller_segments);
+				break;
+			}
+		}
+
+		$controller_class = 'not found';
+
+		if(count($route->all()) < 1){
+			$controller_class = 'indexController';
+		}
+		
+		if(!empty($controller_segments)){
+			$controller_class = $route->segmentsToClass($controller_segments) . 'Controller';
+			//$controller_class = implode('\\', explode('\\\\', $controller_class));
+		}
+
+		if(!class_exists($controller_class)){
+			//echo 'class does not exist';
+			return false;
+		}
+
+		$pattern = '';
+		foreach($controller_segments as $s){
+			$pattern .= ($pattern ? '/' : '') . $s->segment;
+		}
+
+		$action = 'not found';
+		if(count($route->all()) < 2){
 			
 		}
 
-		return $this->show404();
+		if($segments){
+			$action_segment = $segments[0];
+			$action_method = $route->strToClass($action_segment->segment) . 'Action';
+			if(method_exists($controller_class, $action_method)){
+				$segment = array_shift($segments);
+				$action = $action_method;
+				$pattern .= ($pattern ? '/' : '') . $action_segment->segment;
+			}
+		}else{
+			$action = 'indexAction';
+		}
+
+		if(!method_exists($controller_class, $action)){
+			//echo 'action not found';
+			return false;
+		}
+
+		$route->load(false, $pattern, false);
+		$route->update();
+
+		$segment_slugs = [];
+		foreach($segments as $s){
+			$segment_slugs[] = $s->segment;
+		}
+
+		$this->mvcs[] = [
+			'controller' => $controller_class,
+			'action' => $action,
+			'segments' => $segment_slugs,
+			'route' => $route,
+		];
+	}
+
+	static function getUrl(){
+		return self::getProtocol() . $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+	}
+	static function getProtocol(){
+		if (isset($_SERVER['HTTPS']) &&
+		    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
+		    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
+		    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+		  $protocol = 'https://';
+		}
+		else {
+		  $protocol = 'http://';
+		}
+		return $protocol;
 	}
 	function show404(){
-		echo '<p>page not found!</p>';
+		return '<p>page not found!</p>';
 	}
 }
+
