@@ -59,7 +59,11 @@ class Router {
 		return $obj;
 	}
 	
-	function global($pattern, $uri, $callback){
+	function global($pattern, $uri, $callback = null){
+		if(is_callable($uri)){
+			$callback = $uri;
+			$uri = null;
+		}
 		$r = Route::any($pattern, $uri);
 		$r->global();
 
@@ -165,8 +169,11 @@ class Router {
 			$controller_segments[] = $segments[0];
 
 			$class = $route->segmentsToClass($controller_segments);
+			//$class = implode('\\', explode('\\\\', $class));
+
 			if(class_exists($class . 'Controller')){
 				array_shift($segments);
+
 			}else{
 				array_pop($controller_segments);
 				break;
@@ -181,11 +188,11 @@ class Router {
 		
 		if(!empty($controller_segments)){
 			$controller_class = $route->segmentsToClass($controller_segments) . 'Controller';
+			//$controller_class = implode('\\', explode('\\\\', $controller_class));
 		}
-		
 
 		if(!class_exists($controller_class)){
-			echo 'class does not exist';
+			//echo 'class does not exist';
 			return false;
 		}
 

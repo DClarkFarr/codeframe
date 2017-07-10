@@ -4,12 +4,8 @@ function includeFiles($path, $recursive = true, $callback = null, $depth = 0){
 	if(!is_file($path) && !is_dir($path)){
 		return false;
 	}
-	$path = rtrim($path, '/') . '/';
-	$scandir = scandir($path);
-	foreach($scandir as $filename){
-		if($filename == '.' || $filename == '..'){
-			continue;
-		}
+
+	$parse = function($path, $filename, $callback, $depth) use ($recursive){
 		if(is_dir($path . $filename)){
 			if($recursive){
 				includeFiles($path . $filename, $recursive, $callback, $depth + 1);
@@ -21,12 +17,28 @@ function includeFiles($path, $recursive = true, $callback = null, $depth = 0){
 				include $path . $filename;
 			}
 		}
+
+		return true;
+	};
+
+	if(is_file($path)){
+		return $parse($path, '', $callback, $depth);
+	}
+
+	$path = rtrim($path, '/') . '/';
+	$scandir = scandir($path);
+	foreach($scandir as $filename){
+		if($filename == '.' || $filename == '..'){
+			continue;
+		}
+		$parse($path, $filename, $callback, $depth);
 	}
 	return true;
 }
 
 function registerNamespace($path, $namespace){
 	$app_dir = Config::get('app.paths.application');
+	$namespace = str_replace('\\', '/', $namespace);
 
 	if(is_file($path)){
 		$base_path = trim(str_replace($app_dir, '', $path), '/');
@@ -35,10 +47,27 @@ function registerNamespace($path, $namespace){
 		}
 		return false;
 	}
+
 	includeFiles($path, true, function($path, $filename, $depth) use ($namespace, $app_dir){
 		$base_path = trim(str_replace($app_dir, '', $path), '/');
-		if( stripos($base_path, $namespace) !== false ){
+
+		if( stripos($base_path, $namespace) !== false && pathinfo($path . $filename, PATHINFO_EXTENSION) == 'php'){
 			include $path . $filename;
 		}
 	});
+}
+
+function makeDir($path){
+	if(!$path || is_dir($path)){
+		return;
+	}
+	$base = ($path[0] == '/' ? '/' : '');
+	$path = trim($path, '/');
+
+	foreach(explode('/', $path) as $seg){
+		$base .= $seg . '/';
+		if(!is_dir($base)){
+			mkdir($base);
+		}
+	}
 }
