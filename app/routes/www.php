@@ -25,7 +25,7 @@ Route::get('blog/{your-mom}', $router->components->uri)
 	->controller(function($route){
 		return [true, [
 			'class' => 'Controllers\Blog\PostsController',
-			'action' => 'secondAction',
+			'action' => 'indexAction',
 			'segments' => $route->unmatched(),
 		]];
 	});
