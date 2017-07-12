@@ -87,18 +87,9 @@ class Router {
 		$scores = [];
 
 		foreach($this->routes as $key => $r){
-			$r->update();
+			$payload = $r->payload();
 
 			if($r->type == 'global'){
-				/*
-				$global = $this->globals[$r->global_traceback];
-
-				$callback = $global['callback'];
-				if($r->isMatched()){
-					$callback($r, $this);
-				}
-				
-				*/
 
 			}else if($r->type == 'group'){
 
@@ -109,6 +100,7 @@ class Router {
 			}
 		}
 		asort($scores);
+
 		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
 	}
 	function parseMvcs(){

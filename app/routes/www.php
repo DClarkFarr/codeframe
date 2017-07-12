@@ -30,6 +30,7 @@ Route::get('blog/{your-mom}', $router->components->uri)
 		]];
 	});
 
+
 $router->group('blog', $router->components->uri, function($route, $router){
 	$res = Route::get('posts/{id}', $route->unused())
 		->chain($route)
