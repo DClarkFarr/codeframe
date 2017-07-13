@@ -6,6 +6,7 @@ use Controllers\Controller;
 class IndexController extends Controller {
 	
 	function indexAction(){
-		echo 'you are home';
+		
+		return $this->view('www.index.index');
 	}
 }

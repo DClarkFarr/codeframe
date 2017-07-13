@@ -8,11 +8,11 @@ Lightweight model controller framework, intended for quick, powerful development
 2) DONE Controllers
 3) DONE Cron Scripts (def-load file and cli helper)
 4) DONE Multiple sites
-5) Environment override
+5) DONE Environment override
 6) Templates/themes
 7) Plugins
 8) DONE app wrapper class
-9) Router/Router Config
+9) DONE Router/Router Config
 
 ***.env Override TODO***
 - add env to public root directory
