@@ -1,9 +1,9 @@
 <?php 
 
-function view($path, $params){
+function view($path, $params, $prefix = 'views'){
 	$ext = pathinfo($path, PATHINFO_EXTENSION);
 	if($ext != 'php' && $ext != 'html'){
-		$path = Config::get('app.paths.views') . '/' . str_replace('.', '/', $path) . '.php';
+		$path = Config::get('app.paths.' . $prefix) . '/' . str_replace('.', '/', $path) . '.php';
 	}
 
 	extract($params);
