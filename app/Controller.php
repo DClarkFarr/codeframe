@@ -9,7 +9,7 @@ class Controller {
 	var $view;
 
 	var $template;
-
+	var $theme;
 	var $extends;
 	
 	function __construct($route){
@@ -58,15 +58,21 @@ class Controller {
 			return view($file, $this->makeView($args));
 		}
 	}
-	function template($file, $args = [], $extends = null){
+	function template($file, $args = [], $extends = null, $theme = null){
 		if($extends === null){
 			$extends = $this->extends;
+		}
+		if($theme === null){
+			$theme = $this->theme;
 		}
 		if($extends){
 			$res = $this->template->load($extends);
 			if($res){
 				$this->template = $res;
 			}
+		}
+		if($theme){
+			$this->template->theme($theme);
 		}
 
 		return $this->template->make($file, $this->makeView($args));

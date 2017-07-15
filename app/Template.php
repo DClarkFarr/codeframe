@@ -7,6 +7,8 @@ class Template {
 
 	public $themes = [];
 
+	public $selected_theme;
+
 	public $default_theme = 'default';
 
 	public $parts;
@@ -25,10 +27,7 @@ class Template {
 		
 		$this->template_root = $this->getRoot();
 
-		if(is_callable($callback)){
-			$callback = $callback->bindTo($this);
-			$callback();
-		}
+		$this->callback($callback);
 
 		$this->initialize();
 	}
@@ -50,7 +49,7 @@ class Template {
 		});
 	}
 	public function addTheme($name, $parts, $callback = null){
-		$this->themes[$name] = (object) ['parts' => $parts, 'callback' => $callback];
+		$this->themes[$name] = (object) ['parts' => $parts, 'callback' => $callback, 'callback_used' => false];
 	}
 	public function script($filepath, $priority = 10, $head = false){
 		$this->assets->js[$priority][] = [$filepath, $head, 'path'];
@@ -67,6 +66,7 @@ class Template {
 
 	public function scripts($head = false){
 		$scripts = $this->assets->js;
+
 		ksort($scripts);
 
 		$html = "";
@@ -135,8 +135,37 @@ class Template {
 
 		return $template;
 	}
+	public function callback($callback, $params = [], $onCall = null){
+		if(is_callable($callback)){
+			$callback->bindTo($this);
+			$res = $callback($params);
 
+			$this->callback($onCall);
+
+			return $res;
+		}
+	}
+	function theme($theme_name = null){
+		if(!$theme_name){
+			$theme_name = $this->default_theme;
+		}
+
+		if(!isset($this->themes[$theme_name])){
+			return false;
+		}
+
+		$this->selected_theme = $theme_name;
+		$theme = $this->themes[$theme_name];
+		$callback = $theme->callback;
+
+		$this->callback($callback, [], function() use ($theme_name){
+			$this->themes[$theme_name]->callback_used = true;
+		});
+	}
 	function make($file, $params, $theme_name = null){
+		if(!$theme_name){
+			$theme_name = $this->selected_theme;
+		}
 		if(!$theme_name){
 			$theme_name = $this->default_theme;
 		}
@@ -150,8 +179,8 @@ class Template {
 		$resolvers = $theme->parts;
 		$callback = $theme->callback;
 
-		if(is_callable($callback)){
-			$callback($params);
+		if(!$theme->callback_used){
+			$this->callback($callback, $params);
 		}
 
 		$this->parts->view = view($file, $params);

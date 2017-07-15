@@ -1,16 +1,13 @@
 <?php 
 namespace Controllers;
 
-use Controllers\Controller;
+use Www\BaseController;
 
-class IndexController extends Controller {
-	
-	public $extends = 'www';
+class IndexController extends BaseController {
 
-	function indexAction(){
+	function indexAction(){		
+		$this->template->revolution();
 
-		$this->template->script('/js/driver.js');
-		
-		return $this->view('www.index.index');
+		return $this->template->make('www.index.index', $this->makeView());
 	}
 }

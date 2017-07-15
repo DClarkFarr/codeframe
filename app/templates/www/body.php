@@ -1,28 +1,19 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<?php echo $template->scripts(true); ?>
 	<?php echo $template->parts->head; ?>
 </head>
 <body>
-	<div id="header">
-		<div class="container">
-			<?php echo $template->parts->header; ?>
-		</div>
-	</div>
+	<div id="wrapper">
+		
+		<?php echo $template->parts->header; ?>
+
+		<?php echo $template->parts->view; ?>
+
+		<?php echo $template->parts->footer; ?>	
 	
-	
-	<div id="content">
-		<div class='container'>
-			<?php echo $template->parts->view; ?>
-		</div>
+		<?php echo $template->scripts(); ?>
 	</div>
-	
-	<div id="footer">
-		<div class="container">
-			<?php echo $template->parts->footer; ?>	
-		</div>
-	</div>
-	<?php echo $template->scripts(); ?>
 </body>
 </html>
 
