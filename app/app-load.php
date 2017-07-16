@@ -7,7 +7,7 @@ include __DIR__ . '/lib/autoload.php';
 if(defined('APP_PATH') && is_file(APP_PATH)){
 	include APP_PATH;
 }else{
-	throw new Exception("APP_PATH not defined, or file did not exist");
+	include __DIR__ . '/App.php';
 }
 include __DIR__ . '/Cache.php';
 

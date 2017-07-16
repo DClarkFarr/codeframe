@@ -9,8 +9,8 @@ class Controller {
 	var $view;
 
 	var $template;
-	var $theme;
-	var $extends;
+	var $theme = 'default';
+	var $extends = 'default';
 	
 	function __construct($route){
 		$this->route = $route;
@@ -19,7 +19,7 @@ class Controller {
 
 		$this->view = (object) [];
 
-		$this->template = new \Template;
+		$this->template = new \Template($this->extends);
 
 		$this->makeGetFromRoute();
 
@@ -67,6 +67,7 @@ class Controller {
 		}
 		if($extends){
 			$res = $this->template->load($extends);
+
 			if($res){
 				$this->template = $res;
 			}

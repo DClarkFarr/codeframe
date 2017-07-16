@@ -26,14 +26,18 @@ class Template {
 		];
 
 		$this->template_root = $this->getRoot();
-
+		
 		$this->callback($callback);
 
 		$this->initialize();
 	}
 
-	public function getRoot(){
-		return __DIR__;
+	public function getRoot($force = false){
+		if($this->template_root && !$force){
+			return $this->template_root;
+		}
+
+		return $this->template_root = Config::get('app.paths.templates') . '/' . $this->template;
 	}
 
 	public function initialize(){
@@ -104,20 +108,21 @@ class Template {
 	}
 
 	function load($template_dir){
-
-		$dir = !strstr('/', $template_dir) ? Config::get('app.paths.templates') . '/' . $template_dir : $template_dir;
+		$ext = pathinfo($template_dir, PATHINFO_EXTENSION);
+		$dir = !strstr('/', $template_dir) || $ext == 'php' ? Config::get('app.paths.templates') . '/' . $template_dir : $template_dir;
+		$base = basename($dir);
 
 		if(!is_dir($dir)){
 			return false;
 		}
 
-		$template_path = $dir . '/' . 'template.php';
+		$template_path = $dir . '/' . ucfirst($base) . 'Template.php';
 
 		if(!is_file($template_path)){
 			return false;
 		}
 
-		$class = 'Templates\\' . ucfirst($template_dir);
+		$class = 'Templates\\' . ucfirst($base) . 'Template';
 
 		if(!class_exists($class)){
 			include $template_path;
@@ -197,9 +202,8 @@ class Template {
 
 					$filepath = $resolver;
 					if($ext == 'php' && ((strlen($dirname) && $dirname[0] != '/' && strpos($dirname, '/') !== false) || !$dirname)){
-						$filepath = $this->template_root . '/' . $resolver;
+						$filepath = $this->getRoot() . '/' . $resolver;
 					}
-
 					$this->parts->$key = view($filepath, $params, 'templates');
 				}
 			}
