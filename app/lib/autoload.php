@@ -5,6 +5,7 @@ $files = [
 	'Mysqli.php',
 	'Strings.php',
 	'Urls.php',
+	'Variables.php',
 ];
 
 foreach($files as $file){

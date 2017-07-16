@@ -87,18 +87,9 @@ class Router {
 		$scores = [];
 
 		foreach($this->routes as $key => $r){
-			$r->update();
+			$payload = $r->payload();
 
 			if($r->type == 'global'){
-				/*
-				$global = $this->globals[$r->global_traceback];
-
-				$callback = $global['callback'];
-				if($r->isMatched()){
-					$callback($r, $this);
-				}
-				
-				*/
 
 			}else if($r->type == 'group'){
 
@@ -109,6 +100,7 @@ class Router {
 			}
 		}
 		asort($scores);
+
 		return ['scores' => $scores, 'tracebacks' => array_keys($scores)];
 	}
 	function parseMvcs(){
@@ -160,12 +152,17 @@ class Router {
 	}
 	function MVCtoController($uri, $controllers_dir){
 		$route = Route::any(null, $uri)->update();
-		
+
 		$segments = $route->all();
 		$shifted = false;
 		
 		$controller_segments = [];
 		while($segments){
+			if($segments[0]->segment === null){
+				array_shift($segments);
+				continue;
+			}
+
 			$controller_segments[] = $segments[0];
 
 			$class = $route->segmentsToClass($controller_segments);
@@ -179,16 +176,13 @@ class Router {
 				break;
 			}
 		}
-
 		$controller_class = 'not found';
 
-		if(count($route->all()) < 1){
-			$controller_class = 'indexController';
-		}
-		
 		if(!empty($controller_segments)){
 			$controller_class = $route->segmentsToClass($controller_segments) . 'Controller';
 			//$controller_class = implode('\\', explode('\\\\', $controller_class));
+		}else{
+			$controller_class = App::namespaces()->controllers . '\\IndexController';
 		}
 
 		if(!class_exists($controller_class)){
@@ -202,9 +196,6 @@ class Router {
 		}
 
 		$action = 'not found';
-		if(count($route->all()) < 2){
-			
-		}
 
 		if($segments){
 			$action_segment = $segments[0];
@@ -215,6 +206,9 @@ class Router {
 				$pattern .= ($pattern ? '/' : '') . $action_segment->segment;
 			}
 		}else{
+			if(!$pattern){
+				$pattern = '/';
+			}
 			$action = 'indexAction';
 		}
 
@@ -237,6 +231,7 @@ class Router {
 			'segments' => $segment_slugs,
 			'route' => $route,
 		];
+
 	}
 
 	static function getUrl(){

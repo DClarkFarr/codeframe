@@ -244,10 +244,14 @@ Class Uri {
 			$pattern = $this->pattern;
 		}
 
-		$segments = explode('/', $this->patternPrepare($pattern));
+		$result = (object) ['original' => $pattern, 'rules' => [], 'variables' => [], 'allow_segments' => false];
+
+		list($result->pattern, $result->allow_segments) = $this->patternPrepare($pattern);
+
+		$segments = explode('/', $result->pattern);
 
 		$matches = [];
-		$result = (object) ['pattern' => $pattern, 'rules' => [], 'variables' => []];
+		
 		foreach($segments as $seg){
 			if(preg_match($this->regex->var_optional, $seg, $matches)){
 				$result->rules[] = (object) ['type' => 'variable', 'optional' => true, 'value' => $matches[1], 'full' => $matches[0]];
@@ -262,7 +266,15 @@ Class Uri {
 		return $result;
 	}
 	function patternPrepare($pattern){
-		return trim($pattern, ' /');
+		$allow_segments = false;
+		$pattern = trim($pattern, ' /');
+
+		if(substr($pattern, -1) == '*'){
+			$allow_segments = true;
+		}
+		$pattern = trim($pattern, ' */');
+
+		return [$pattern, $allow_segments];
 	}
 	
 }

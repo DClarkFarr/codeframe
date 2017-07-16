@@ -6,10 +6,12 @@ class App {
 	static $properties;
 
 	static function bootstrap(){
-		
-		
-
+	
 		Config::bootstrap();
+
+		if(Config::get('app.debug')){
+			self::enableDebug();
+		}
 
 		DB::bootstrap();
 
@@ -18,7 +20,6 @@ class App {
 		Cache::bootstrap();
 
 		Router::bootstrap();
-
 		
 		self::extendControllersViewsRoutes();
 
@@ -27,8 +28,6 @@ class App {
 			'Controllers' => Config::get('app.paths.controllers'),
 			'routes' => Config::get('app.paths.routes'),
 		]);
-		
-
 	}
 
 	static function paths(){
@@ -75,6 +74,10 @@ class App {
 
 		self::$properties->paths = (object)[ 'controllers' => '', 'views' => ''];
 		self::$properties->namespaces = (object)[ 'controllers' => ''];
+	}
+	static function enableDebug(){
+		error_reporting(E_ALL);
+		ini_set('display_errors', 1);
 	}
 	
 }

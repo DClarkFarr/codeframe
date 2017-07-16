@@ -25,10 +25,11 @@ Route::get('blog/{your-mom}', $router->components->uri)
 	->controller(function($route){
 		return [true, [
 			'class' => 'Controllers\Blog\PostsController',
-			'action' => 'secondAction',
+			'action' => 'indexAction',
 			'segments' => $route->unmatched(),
 		]];
 	});
+
 
 $router->group('blog', $router->components->uri, function($route, $router){
 	$res = Route::get('posts/{id}', $route->unused())

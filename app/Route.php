@@ -204,11 +204,24 @@ class Route {
 	function getRouter(){
 		return Router::get($this->router_name);
 	}
-	function isMatched(){
-		if($this->component->payload->matched && in_array($this->getRouter()->components->method, $this->methods) ){
-			return true;
+	function isMatched($full = false, $tolerance = 0, $allow_segments = null){
+		$payload = $this->component->payload;
+
+		if($allow_segments === null){
+			$allow_segments = $payload->pattern->allow_segments;
 		}
-		return false;
+		
+		if($payload->matched && in_array($this->getRouter()->components->method, $this->methods) ){
+			$found = true;
+		}else{
+			$found = false;
+		}
+		if($full && $found){	
+			if(count($payload->segments) > count(array_filter($payload->segments)) + $tolerance && !$allow_segments){
+				$found = false;
+			}
+		}
+		return $found;
 	}
 
 	function getController(){
@@ -248,21 +261,25 @@ class Route {
 		if(count($rows)){
 			for($i = count($rows) - 1; $i > -1; $i--){
 				$class = $this->segmentsToClass(array_slice($rows, 0, $i + 1)) . 'Controller';
-
 				if(class_exists($class)){
-					$unused = array_slice($rows, $i + 1);
+					$unused = arrays_add(array_slice($rows, $i + 1), $this->unmatched());
+
+					$tolerance = 0;
 					if($unused){
 						$action = reset($unused)->segment . 'Action';
 						if(method_exists($class, $action)){
-							array_shift($rows);
+							array_shift($unused);
+							$tolerance = 1;
 						}else{
 							$action = 'indexAction';
 						}
 					}else{
 						$action = 'indexAction';
 					}
-					
 					if(method_exists($class, $action)){
+						if(!$this->isMatched(true, $tolerance)){
+							return [false, 'Full Route not matched'];
+						}
 						return [true, [
 							'class' => $class,
 							'action' => $action,
@@ -274,6 +291,11 @@ class Route {
 			}
 
 			return [false, 'Controller not found'];
+		}
+
+									//if no url set tolerance to 1 to account for empty segments array at [0]
+		if(!$this->isMatched(true, ($this->unused() ? 0 : 1))){
+			return [false, 'Full Route not matched'];
 		}
 
 		$class = App::namespaces()->controllers . '\\IndexController';

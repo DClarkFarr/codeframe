@@ -13,10 +13,12 @@ return [
 		'path' => realpath(__DIR__ . '/../') . '/storage/cache/',
 	),
 	'paths' => array(
-		'application' => APPLICATION_ROOT,
-		'routes' => ROUTES_PATH,
-		'controllers' => CONTROLLERS_PATH,
+		'root' => coalesce(ifGlobal('DOCUMENT_ROOT'), $_SERVER['DOCUMENT_ROOT']),
+		'application' => coalesce(ifGlobal('APPLICATION_ROOT'), realpath(__DIR__ . '/../')),
+		'routes' => coalesce(ifGlobal('ROUTES_PATH'), realpath(__DIR__ . '/../routes')),
+		'controllers' => coalesce(ifGlobal('CONTROLLERS_PATH'), realpath(__DIR__ . '/../Controllers')),
 		'models' => realpath( __DIR__ . '/../Models'),
+		'templates' => realpath(__DIR__ . '/../templates'),
 		'views' => realpath(__DIR__ . '/../views'),
 	),
 ];

@@ -13,6 +13,7 @@ class Config {
 	static function bootstrap(){
 		self::$properties = (object) [];
 		self::includeFiles();
+		self::loadEnv();
 	}
 	static function includeFiles(){
 		foreach(self::$autoload_files as $property => $file){
@@ -29,5 +30,16 @@ class Config {
 
 	static function get($key){
 		return self::_get(self::$properties, $key);
+	}
+
+	static function loadEnv(){
+		if(is_file(Config::get('app.paths.root') . '/.env')){
+			$env = include Config::get('app.paths.root') . '/.env';
+			if(is_array($env)){
+				foreach($env as $key => $val){
+					self::put($key, $val);
+				}
+			}
+		}
 	}
 }

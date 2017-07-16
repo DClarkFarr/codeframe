@@ -1,5 +1,20 @@
 <?php 
 
+function view($path, $params, $prefix = 'views'){
+	$ext = pathinfo($path, PATHINFO_EXTENSION);
+	if($ext != 'php' && $ext != 'html'){
+		$path = Config::get('app.paths.' . $prefix) . '/' . str_replace('.', '/', $path) . '.php';
+	}
+
+	extract($params);
+	ob_start();
+
+	if(is_file($path)){
+		include $path;
+	}
+
+	return ob_get_clean();
+}
 function includeFiles($path, $recursive = true, $callback = null, $depth = 0){
 	if(!is_file($path) && !is_dir($path)){
 		return false;

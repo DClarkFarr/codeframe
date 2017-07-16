@@ -1,9 +1,9 @@
 <?php
 namespace Controllers;
 
-use Controllers\Controller;
+use Controllers\BaseController;
 
-class BlogController extends Controller {
+class BlogController extends BaseController {
 	function postssAction(){
 		return 'echo posts magic is: ' . $this->get('your-mom');
 	}
