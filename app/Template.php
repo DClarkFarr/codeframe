@@ -20,11 +20,11 @@ class Template {
 
 		$this->parts = (object) [];
 
-		$this->asssets = (object) [
+		$this->assets = (object) [
 			'js' => [],
 			'css' => [],
 		];
-		
+
 		$this->template_root = $this->getRoot();
 
 		$this->callback($callback);
@@ -39,8 +39,8 @@ class Template {
 	public function initialize(){
 
 		$this->addTheme($this->default_theme, [
-			'header' => 'www.header',
 			'head' => 'head.php',
+			'header' => 'header.php',
 			'sidebar' => 'sidebar.php',
 			'footer' => 'footer.php',
 			'body' => 'body.php',
@@ -199,7 +199,7 @@ class Template {
 					if($ext == 'php' && ((strlen($dirname) && $dirname[0] != '/' && strpos($dirname, '/') !== false) || !$dirname)){
 						$filepath = $this->template_root . '/' . $resolver;
 					}
-					
+
 					$this->parts->$key = view($filepath, $params, 'templates');
 				}
 			}
