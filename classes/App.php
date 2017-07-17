@@ -5,9 +5,9 @@ class App {
 
 	static $properties;
 
-	static function bootstrap(){
+	static function bootstrap($app_root = null){
 	
-		Config::bootstrap();
+		Config::bootstrap($app_root);
 
 		if(Config::get('app.debug')){
 			self::enableDebug();

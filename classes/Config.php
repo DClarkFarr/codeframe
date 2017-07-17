@@ -4,6 +4,8 @@ namespace Codeframe;
 class Config {
 	use Traits\Storage;
 	static $properties;
+	
+	static $app_root;
 
 	static $autoload_files = [
 		'database' => 'database.php',
@@ -11,14 +13,15 @@ class Config {
 		'session' => 'session.php',
 	];
 
-	static function bootstrap(){
+	static function bootstrap($app_root){
+		self::$app_root = $app_root;
 		self::$properties = (object) [];
 		self::includeFiles();
 		self::loadEnv();
 	}
 	static function includeFiles(){
 		foreach(self::$autoload_files as $property => $file){
-			$path = __DIR__ . '/../../config/' . $file;
+			$path = self::$app_root .'/'. $file;
 			if(is_file($path)){
 				self::put($property, (object) include $path);
 			}
