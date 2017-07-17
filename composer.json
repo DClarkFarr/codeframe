@@ -3,7 +3,6 @@
     "description": "A lightweight MVC framework that really means it",
     
     "require": {
-        "php": ">=7.0",
         "illuminate/container": "5.5.*",
         "illuminate/contracts": "5.5.*",
         "illuminate/support": "5.5.*",
@@ -14,12 +13,6 @@
         "illuminate/cache": "5.5.*",
 
         "nesbot/carbon": "~1.20"
-    },
-    
-    "extra": {
-        "branch-alias": {
-            "dev-master": "5.5-dev"
-        }
     },
     
     "config": {
