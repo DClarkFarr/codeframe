@@ -3,6 +3,7 @@
     "description": "A lightweight MVC framework that really means it",
     
     "require": {
+        "php": ">=7.0",
         "illuminate/container": "5.5.*",
         "illuminate/contracts": "5.5.*",
         "illuminate/support": "5.5.*",
