@@ -1,4 +1,7 @@
 {
+    "name": "DClarkFarr/codeframe",
+    "description": "A lightweight MVC framework that really means it",
+    
     "support": {
         "issues": "https://github.com/laravel/framework/issues",
         "source": "https://github.com/laravel/framework"
