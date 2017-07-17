@@ -1,7 +1,8 @@
 <?php 
+namespace Codeframe;
 
 class Config {
-	use \Traits\Storage;
+	use Traits\Storage;
 	static $properties;
 
 	static $autoload_files = [
@@ -17,7 +18,7 @@ class Config {
 	}
 	static function includeFiles(){
 		foreach(self::$autoload_files as $property => $file){
-			$path = __DIR__ . '/config/' . $file;
+			$path = __DIR__ . '/../../config/' . $file;
 			if(is_file($path)){
 				self::put($property, (object) include $path);
 			}
@@ -33,6 +34,7 @@ class Config {
 	}
 
 	static function loadEnv(){
+
 		if(is_file(Config::get('app.paths.root') . '/.env')){
 			$env = include Config::get('app.paths.root') . '/.env';
 			if(is_array($env)){

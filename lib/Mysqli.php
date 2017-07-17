@@ -1,6 +1,6 @@
 <?php 
 
-namespace Mysqli;
+namespace Codeframe\Mysqli;
 
 function query($query, $extra = null){
 	//echo $query, "<br /><br />";

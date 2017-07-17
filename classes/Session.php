@@ -1,4 +1,5 @@
 <?php
+namespace Codeframe;
 
 use Illuminate\Session\Store;
 use Illuminate\Session\DatabaseSessionHandler;

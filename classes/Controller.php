@@ -1,5 +1,5 @@
 <?php 
-namespace Controllers;
+namespace Codeframe;
 
 class Controller {
 	var $route;
@@ -19,7 +19,7 @@ class Controller {
 
 		$this->view = (object) [];
 
-		$this->template = new \Template($this->extends);
+		$this->template = new Template($this->extends);
 
 		$this->makeGetFromRoute();
 

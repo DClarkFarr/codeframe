@@ -1,4 +1,5 @@
 <?php 
+namespace Codeframe;
 
 class Route {
 
@@ -14,7 +15,7 @@ class Route {
 	];
 	var $methods;
 	var $component;
-	var $component_class = 'Uri';
+	var $component_class = 'Codeframe\Uri';
 
 	var $type = 'route';
 	var $traceback;
@@ -358,7 +359,7 @@ class Route {
 			return $this;
 		}
 
-		throw new Exception('Route::' . $name . '() not found');
+		throw new \Exception('Route::' . $name . '() not found');
 	}
 	static function __callStatic($name, $params){
 		if(in_array($name, ['any', 'get', 'post', 'put', 'delete', 'options', 'match'])){
@@ -367,7 +368,7 @@ class Route {
 			}
 			return call_user_func_array([self::class, 'create'], $params); 
 		}
-		throw new Exception('Route::' . $name . '() not found');
+		throw new \Exception('Route::' . $name . '() not found');
 	}
 
 	//static functions

@@ -1,4 +1,5 @@
 <?php 
+namespace Codeframe;
 
 class Router {
 	static $routers = [];

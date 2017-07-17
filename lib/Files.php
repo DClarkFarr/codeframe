@@ -3,7 +3,7 @@
 function view($path, $params, $prefix = 'views'){
 	$ext = pathinfo($path, PATHINFO_EXTENSION);
 	if($ext != 'php' && $ext != 'html'){
-		$path = Config::get('app.paths.' . $prefix) . '/' . str_replace('.', '/', $path) . '.php';
+		$path = Codeframe\Config::get('app.paths.' . $prefix) . '/' . str_replace('.', '/', $path) . '.php';
 	}
 
 	extract($params);
@@ -52,7 +52,7 @@ function includeFiles($path, $recursive = true, $callback = null, $depth = 0){
 }
 
 function registerNamespace($path, $namespace){
-	$app_dir = Config::get('app.paths.application');
+	$app_dir = CodeFrame\Config::get('app.paths.application');
 	$namespace = str_replace('\\', '/', $namespace);
 
 	if(is_file($path)){

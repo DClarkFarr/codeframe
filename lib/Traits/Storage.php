@@ -1,5 +1,5 @@
 <?php 
-namespace Traits;
+namespace Codeframe\Traits;
 
 trait Storage {
 	static function _get($obj, $key){

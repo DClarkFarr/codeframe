@@ -1,7 +1,9 @@
 <?php 
+namespace Codeframe;
 
 use Illuminate\Cache\CacheManager;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Container\Container;
 
 class Cache {
 	
@@ -10,9 +12,9 @@ class Cache {
 	static function bootstrap(){
 		makeDir(Config::get('app.cache.path'));
 
-		$app = new Illuminate\Container\Container();
+		$app = new Container();
 		$app->singleton('files', function(){
-		    return new Illuminate\Filesystem\Filesystem();
+		    return new Filesystem();
 		});
 
 		$app->singleton('config', function(){
@@ -44,7 +46,7 @@ class Cache {
 
 	static function __callStatic($name, $args){
 		if(empty(self::$instance)){
-			throw new RuntimeException('You need to run install first!');
+			throw new \RuntimeException('You need to run install first!');
 		}
 
 		if(method_exists(self::$instance, $name)){

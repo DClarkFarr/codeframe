@@ -1,4 +1,5 @@
 <?php 
+namespace Codeframe;
 
 Class Uri {
 	var $uri = "";

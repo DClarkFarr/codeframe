@@ -24,7 +24,7 @@
     },
     "config": {
         "sort-packages": true,
-         "vendor-dir": "../vendor"
+         "vendor-dir": "../../vendor"
     },
     "minimum-stability": "dev"
 }
