@@ -254,9 +254,9 @@ class Router {
 	}
 	function show404($controller_class = null){
 		if($controller_class && class_exists($controller_class)){
-			return (new $controller_class(new Route))->pageNotFound();
+			return (new $controller_class($this->route()))->pageNotFound();
 		}
-		return (new Controller(new Route))->pageNotFound();
+		return (new Controller($this->route()))->pageNotFound();
 	}
 }
 
