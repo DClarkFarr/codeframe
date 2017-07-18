@@ -26,6 +26,8 @@ class App {
 		self::registerNamespaces([
 			'Models' => Config::get('app.paths.models'),
 			'Controllers' => Config::get('app.paths.controllers'),
+			'Services' => Config::get('app.paths.services'),
+			'Utils' => Config::get('app.paths.utils'),
 			'routes' => Config::get('app.paths.routes'),
 		]);
 	}
