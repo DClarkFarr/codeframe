@@ -116,10 +116,15 @@ trait Storage {
 
 		while($seg = array_shift($segments)){
 			$str .= ($str ? '.' : '') . $seg;
+
 			if(is_object($base) && !empty($base->$str)){
 				$base = self::getRecursive($base->$str, $segments);
+				break;
 			}else if(is_array($base) && isset($base[$str])){
 				$base = self::getRecursive($base[$str], $segments);
+				break;
+			}else{
+				$base = null;
 			}
 		}
 		return $base;
