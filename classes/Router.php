@@ -151,7 +151,7 @@ class Router {
 			}
 		}
 
-		return $this->show404($controller_class);
+		echo $this->show404($controller_class);
 	}
 	function MVCtoController($uri, $controllers_dir){
 		$route = Route::any(null, $uri)->update();
