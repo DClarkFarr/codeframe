@@ -92,28 +92,56 @@ class Controller {
 	function html404(){
 		ob_start();
 		?>
-		<style type='text/css'>
-		  #fof{display:block; width:100%; padding:150px 0; line-height:1.6em; text-align:center;}
-		  #fof .hgroup{display:block; width:80%; margin:0 auto; padding:0;}
-		  #fof .hgroup h1, #fof .hgroup h2{margin:0 0 0 40px; padding:0; float:left; text-transform:uppercase;}
-		  #fof .hgroup h1{margin-top:-90px; font-size:200px;}
-		  #fof .hgroup h2{font-size:60px;}
-		  #fof .hgroup h2 span{display:block; font-size:30px;}
-		  #fof p{margin:25px 0 0 0; padding:0; font-size:16px;}
-		  #fof p:first-child{margin-top:0;}
-		</style>
-		<div class="wrapper row2">
-		  <div id="container" class="clear">
-		    <section id="fof" class="clear">
-		      <div class="hgroup clear">
-		        <h1>404</h1>
-		        <h2>Error ! <span>Page Not Found</span></h2>
-		      </div>
-		      <p>For Some Reason The Page You Requested Could Not Be Found On Our Server</p>
-		      <p><a href="javascript:history.go(-1)">&laquo; Go Back</a> / <a href="#">Go Home &raquo;</a></p>
-		    </section>
-		  </div>
-		</div>
+		<!doctype html>
+		<html lang="en">
+		<head>
+		    <meta charset="utf-8">
+		    <title>Page Not Found</title>
+		    <meta name="viewport" content="width=device-width, initial-scale=1">
+		    <style>
+		        * {
+		            line-height: 1.2;
+		            margin: 0;
+		        }
+		        html {
+		            color: #888;
+		            display: table;
+		            font-family: sans-serif;
+		            height: 100%;
+		            text-align: center;
+		            width: 100%;
+		        }
+		        body {
+		            display: table-cell;
+		            vertical-align: middle;
+		            margin: 2em auto;
+		        }
+		        h1 {
+		            color: #555;
+		            font-size: 2em;
+		            font-weight: 400;
+		        }
+		        p {
+		            margin: 0 auto;
+		            width: 280px;
+		        }
+		        @media only screen and (max-width: 280px) {
+		            body, p {
+		                width: 95%;
+		            }
+		            h1 {
+		                font-size: 1.5em;
+		                margin: 0 0 0.3em;
+		            }
+		        }
+		    </style>
+		</head>
+		<body>
+		    <h1>Page Not Found</h1>
+		    <p>Sorry, but the page you were trying to view does not exist.</p>
+		</body>
+		</html>
+		<!-- IE needs 512+ bytes: https://blogs.msdn.microsoft.com/ieinternals/2010/08/18/friendly-http-error-pages/ -->
 		<?php
 		return ob_get_clean();
 	}
