@@ -133,7 +133,7 @@ class Router {
 
 				$route = $this->routes[$route_traceback];
 
-				list($status, $message) = $route->getController();
+				list($status, $message, $controller_class) = $route->getController();
 
 				if($status && ((is_numeric($mvc_score) && $route_score <= $mvc_score) || $mvc_score === false)){
 					$controller = new $message['class']($route);
@@ -149,7 +149,7 @@ class Router {
 			}
 		}
 
-		echo $this->show404();
+		return $this->show404($controller_class);
 	}
 	function MVCtoController($uri, $controllers_dir){
 		$route = Route::any(null, $uri)->update();
@@ -250,8 +250,11 @@ class Router {
 		}
 		return $protocol;
 	}
-	function show404(){
-		return '<p>page not found!</p>';
+	function show404($controller_class = null){
+		if($controller_class && class_exists($controller_class)){
+			return (new $controller_class)->pageNotFound();
+		}
+		return (new Controller)->pageNotFound();
 	}
 }
 
