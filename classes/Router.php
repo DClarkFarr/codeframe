@@ -117,6 +117,7 @@ class Router {
 		return ['scores' => $scores, 'mvcs' => $this->mvcs];
 	}
 	function dispatch(){
+		$controller_class = false;
 		if($this->routes){
 			$parsedRoutes = $this->parseRoutes();
 			$parsedMvcs = $this->parseMvcs();
@@ -143,6 +144,7 @@ class Router {
 			}
 
 			if(!empty($mvc)){
+				$controller_class = $mvc['controller'];
 				$controller = new $mvc['controller']($mvc['route']);
 				echo $controller->{$mvc['action']}();
 				return;
@@ -252,9 +254,9 @@ class Router {
 	}
 	function show404($controller_class = null){
 		if($controller_class && class_exists($controller_class)){
-			return (new $controller_class)->pageNotFound();
+			return (new $controller_class(new Route))->pageNotFound();
 		}
-		return (new Controller)->pageNotFound();
+		return (new Controller(new Route))->pageNotFound();
 	}
 }
 
