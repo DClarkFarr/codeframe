@@ -169,15 +169,12 @@ class Template {
 		});
 	}
 	function make($file, $params, $theme_name = null){
-		if(!$theme->callback_used){
-			$this->callback($callback, $params);
-		}
 
 		$this->parts->view = view($file, $params);
 
-		return $this->build($theme_name);
+		return $this->build($theme_name, $params);
 	}
-	function build($theme_name, $view = null){
+	function build($theme_name, $params, $view = null){
 		if($view){
 			$this->parts->view = $view;
 		}
@@ -193,6 +190,10 @@ class Template {
 		}
 
 		$theme = $this->themes[$theme_name];
+
+		if(!$theme->callback_used){
+			$this->callback($callback, $params);
+		}
 
 		$resolvers = $theme->parts;
 		$callback = $theme->callback;
