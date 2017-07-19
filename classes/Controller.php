@@ -44,7 +44,7 @@ class Controller {
 			}
 		}
 	}
-	function get($key == null){
+	function get($key = null){
 		if($key === null){
 			return $this->get;
 		}
