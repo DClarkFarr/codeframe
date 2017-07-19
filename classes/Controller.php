@@ -44,11 +44,32 @@ class Controller {
 			}
 		}
 	}
-	function get($key = null){
+	function get($key == null){
+		if($key === null){
+			return $this->get;
+		}
+		if($key == 'segments'){
+			return $this->uri();
+		}
+		if($key == 'params'){
+			return $this->param();
+		}
+		if(is_numeric($key)){
+			return $this->uri($key);
+		}
+		return $this->param($key);
+	}
+	function param($key = null){
 		if($key == null){
-			return $this->get->uri;
+			return (object) ($this->get->params ? $this->get->params : []);
 		} 
 		return !empty($this->get->params[$key]) ? $this->get->params[$key] : null;
+	}
+	function uri($index = null){
+		if($index === null){
+			return $this->get->uri;
+		}
+		return isset($this->get->uri[$index]) ? $this->get->uri[$index] : null;
 	}
 
 	function view($file, $args = []){
