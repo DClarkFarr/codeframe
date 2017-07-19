@@ -169,6 +169,18 @@ class Template {
 		});
 	}
 	function make($file, $params, $theme_name = null){
+		if(!$theme->callback_used){
+			$this->callback($callback, $params);
+		}
+
+		$this->parts->view = view($file, $params);
+
+		return $this->build($theme_name);
+	}
+	function build($theme_name, $view = null){
+		if($view){
+			$this->parts->view = $view;
+		}
 		if(!$theme_name){
 			$theme_name = $this->selected_theme;
 		}
@@ -184,12 +196,6 @@ class Template {
 
 		$resolvers = $theme->parts;
 		$callback = $theme->callback;
-
-		if(!$theme->callback_used){
-			$this->callback($callback, $params);
-		}
-
-		$this->parts->view = view($file, $params);
 
 		if($resolvers){
 			foreach($resolvers as $key => $resolver){

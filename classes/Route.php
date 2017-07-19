@@ -279,7 +279,7 @@ class Route {
 					}
 					if(method_exists($class, $action)){
 						if(!$this->isMatched(true, $tolerance)){
-							return [false, 'Full Route not matched'];
+							return [false, 'Full Route not matched', $class];
 						}
 						return [true, [
 							'class' => $class,
@@ -296,24 +296,24 @@ class Route {
 
 									//if no url set tolerance to 1 to account for empty segments array at [0]
 		if(!$this->isMatched(true, ($this->unused() ? 0 : 1))){
-			return [false, 'Full Route not matched'];
+			return [false, 'Full Route not matched', $class];
 		}
 
 		$class = App::namespaces()->controllers . '\\IndexController';
 		$action = 'indexAction';
 
 		if(!class_exists($class)){
-			return [false, 'Controller not found'];
+			return [false, 'Controller not found', false];
 		}
 		if(!method_exists($class, $action)){
-			return [false, 'Action not found'];
+			return [false, 'Action not found', false];
 		}
 
 		return [true, [
 			'class' => $class,
 			'action' => $action,
 			'segments' => $this->unmatched(),
-		]];
+		], $class];
 		
 	}
 	function segmentsToClass($segments){
