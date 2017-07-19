@@ -256,6 +256,13 @@ class Router {
 		if($controller_class && class_exists($controller_class)){
 			return (new $controller_class($this->route()))->pageNotFound();
 		}
+
+		$index_controller = App::namespaces()->controllers . '\\IndexController';;
+		
+		if($index_controller && class_exists($index_controller)){
+			return (new $index_controller($this->route()))->pageNotFound();
+		}
+
 		return (new Controller($this->route()))->pageNotFound();
 	}
 }
