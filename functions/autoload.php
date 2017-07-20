@@ -13,5 +13,3 @@ foreach($files as $file){
 		include __DIR__ . '/' . $file;
 	}
 }
-
-includeFiles(__DIR__ . '/Traits');
