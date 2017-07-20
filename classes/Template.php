@@ -190,13 +190,12 @@ class Template {
 		}
 
 		$theme = $this->themes[$theme_name];
+		$resolvers = $theme->parts;
+		$callback = $theme->callback;
 
 		if(!$theme->callback_used){
 			$this->callback($callback, $params);
 		}
-
-		$resolvers = $theme->parts;
-		$callback = $theme->callback;
 
 		if($resolvers){
 			foreach($resolvers as $key => $resolver){

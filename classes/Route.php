@@ -296,7 +296,7 @@ class Route {
 
 									//if no url set tolerance to 1 to account for empty segments array at [0]
 		if(!$this->isMatched(true, ($this->unused() ? 0 : 1))){
-			return [false, 'Full Route not matched', $class];
+			return [false, 'Full Route not matched', false];
 		}
 
 		$class = App::namespaces()->controllers . '\\IndexController';
