@@ -29,6 +29,9 @@ class DB {
 
 		self::$MYSQLI = Mysqli\connect_db($connection);
 	}
+	static function schema(){
+		return self::$capsule->schema();
+	}
 	static function connection(){
 		return self::$capsule->connection();
 	}

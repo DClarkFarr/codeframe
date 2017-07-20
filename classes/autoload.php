@@ -7,6 +7,7 @@ $files = [
 	'DB.php',
 	'Route.php',
 	'Router.php',
+	'Schema.php',
 	'Session.php',
 	'Template.php',
 	'Uri.php',
