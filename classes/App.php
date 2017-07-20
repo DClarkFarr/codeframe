@@ -13,7 +13,7 @@ class App {
 			self::enableDebug();
 		}
 
-		date_default_timezone_set(Config::get('timezones.server_default'));
+		date_default_timezone_set(Config::get('app.timezones.server_default'));
 
 		DB::bootstrap();
 
