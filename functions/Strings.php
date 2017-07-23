@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 function segmentsToClass($segments){
 	$classname = 'Controllers';
@@ -9,7 +9,7 @@ function segmentsToClass($segments){
 			}else if($segment->rule->type == 'variable'){
 				$classname .= '\\' . strToClass( property_exists($segment, 'param') ?  $segment->param : $segment->rule->value);
 			}
-			
+
 		}
 
 		return $classname;
@@ -22,4 +22,8 @@ function strToClass($str){
 	$str = ucwords($str);
 	$str = str_replace(' ', '', $str);
 	return $str;
+}
+function strfix($str){
+	$str = preg_replace('@[^a-z\-]@', '-', trim(strtolower($str)));
+  return preg_replace('@\-{2,}@', '-', $str);
 }
